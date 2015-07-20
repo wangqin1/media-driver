@@ -611,6 +611,7 @@ VAStatus DdiEncodeHevc::ParsePicParams(
     hevcPicParams->pps_cr_qp_offset                 = picParams->pps_cr_qp_offset;
     hevcPicParams->num_tile_columns_minus1          = picParams->num_tile_columns_minus1;
     hevcPicParams->num_tile_rows_minus1             = picParams->num_tile_rows_minus1;
+    hevcPicParams->constrained_mv_in_tile           = picParams->restricted_mv_in_tile;
     hevcPicParams->log2_parallel_merge_level_minus2 = picParams->log2_parallel_merge_level_minus2;
     hevcPicParams->LcuMaxBitsizeAllowed             = picParams->ctu_max_bitsize_allowed;
     hevcPicParams->bUsedAsRef                       = picParams->pic_fields.bits.reference_pic_flag;

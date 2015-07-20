@@ -442,6 +442,8 @@ MOS_STATUS CodecHalHevcMbencG12::AllocateMDFResources()
         }
     }
 
+    //m_cmDev->InitPrintBuffer();
+
     //create CM Queue
     if (!m_cmQueue)
     {
@@ -464,6 +466,8 @@ MOS_STATUS CodecHalHevcMbencG12::AllocateMDFResources()
 
 MOS_STATUS CodecHalHevcMbencG12::DestroyMDFResources()
 {
+    //m_cmDev->FlushPrintBuffer();
+
     if (m_cmDev && m_cmTask)
     {
         m_cmDev->DestroyTask(m_cmTask);
@@ -668,6 +672,36 @@ MOS_STATUS CodecHalHevcMbencG12::SetupKernelArgsB()
         //Setup first combined 1D surface
         int idx = 0;
         int commonIdx = 0;
+        
+        unsigned int restrictedMV = 0;
+        int16_t tileStartX[22] = { 0 };
+        int16_t tileEndX[22] = { 0 };
+        int16_t tileStartY[22] = { 0 };
+        int16_t tileEndY[22] = { 0 };
+
+        if (m_isMaxLcu64)
+        {
+            restrictedMV = m_hevcPicParams->constrained_mv_in_tile;
+            uint8_t numTileCols = m_hevcPicParams->num_tile_columns_minus1 + 1;
+            uint8_t numTileRows = m_hevcPicParams->num_tile_rows_minus1 + 1;
+            uint32_t totalTilesWidth = 0;
+            uint32_t totalTilesHeight = 0;
+            uint8_t tile_col_idx = 0;
+            uint8_t tile_row_idx = 0;
+            for (tile_col_idx = 0; tile_col_idx < numTileCols; tile_col_idx++)
+            {
+                tileStartX[tile_col_idx] = (int16_t)(totalTilesWidth);
+                totalTilesWidth += (m_hevcPicParams->tile_column_width[tile_col_idx] << 6);
+                tileEndX[tile_col_idx] = (int16_t)(totalTilesWidth);
+            }
+            for (tile_row_idx = 0; tile_row_idx < numTileRows; tile_row_idx++)
+            {
+                tileStartY[tile_row_idx] = (int16_t)(totalTilesHeight);
+                totalTilesHeight += (m_hevcPicParams->tile_row_height[tile_row_idx] << 6);
+                tileEndY[tile_row_idx] = (int16_t)(totalTilesHeight);
+            }
+        }
+
         CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(SurfaceIndex) * m_maxMultiFrames, &((*m_surfIndexArray)[commonIdx++][0])));
 
         //Setup second combined 1D surface
@@ -725,6 +759,15 @@ MOS_STATUS CodecHalHevcMbencG12::SetupKernelArgsB()
         {
             CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(SurfaceIndex), surfIndex));
             CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(SurfaceIndex), surfIndex));
+        }
+ 
+        if (m_isMaxLcu64)
+        {
+            CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(unsigned int), &restrictedMV));
+            CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(int16_t) * 22, tileStartX));
+            CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(int16_t) * 22, tileEndX));
+            CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(int16_t) * 22, tileStartY));
+            CODECHAL_ENCODE_CHK_STATUS_RETURN(cmKrn->SetKernelArg(idx++, sizeof(int16_t) * 22, tileEndY));
         }
 
         // Kernel debug surface
