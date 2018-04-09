@@ -931,6 +931,7 @@ struct CodecEncodeHevcFeiPicParams
     uint32_t                    RefHeight;
     uint32_t                    SearchWindow;
     uint32_t                    MaxNumIMESearchCenter;
+    uint32_t                    FastIntraMode;
     uint32_t                    NumConcurrentEncFramePartition;
 
     /** \brief add for mutlple pass pak */

@@ -385,6 +385,7 @@ VAStatus DdiEncodeHevcFei::ParseMiscParamFeiPic(void *data)
     feiPicParams->RefHeight               = vaEncMiscParamFeiPic->ref_height;
     feiPicParams->SearchWindow            = vaEncMiscParamFeiPic->search_window;
     feiPicParams->MaxNumIMESearchCenter   = vaEncMiscParamFeiPic->max_num_ime_search_center;
+    feiPicParams->FastIntraMode           = vaEncMiscParamFeiPic->fast_intra_mode;
     feiPicParams->NumConcurrentEncFramePartition = vaEncMiscParamFeiPic->num_concurrent_enc_frame_partition;
     feiPicParams->dwMaxFrameSize          = vaEncMiscParamFeiPic->max_frame_size;
 
