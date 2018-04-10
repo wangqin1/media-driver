@@ -50,6 +50,11 @@
 #include "codechal_encoder_base.h"
 #include "media_libva_common.h"
 
+#if (_DEBUG || _RELEASE_INTERNAL)
+// Trigger Codec Hang buffer type
+#define VATriggerCodecHangBufferType    -16
+#endif //(_DEBUG || _RELEASE_INTERNAL)
+
 #define DDI_CODEC_GEN_MAX_PROFILES                 17   //  the number of va profiles, some profiles in va_private.h
 #define DDI_CODEC_GEN_MAX_ENTRYPOINTS              7    // VAEntrypointVLD, VAEntrypointEncSlice, VAEntrypointEncSliceLP, VAEntrypointVideoProc
 

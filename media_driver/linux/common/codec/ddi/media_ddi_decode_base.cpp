@@ -758,6 +758,13 @@ VAStatus DdiMediaDecode::CreateBuffer(
             buf->pData      = (uint8_t*)MOS_AllocAndZeroMemory(size * numElements);
             buf->format     = Media_Format_CPU;
             break;
+#if (_DEBUG || _RELEASE_INTERNAL)
+        case VATriggerCodecHangBufferType:
+        {
+            buf->pData      = (uint8_t*)MOS_AllocAndZeroMemory(size * numElements);
+            break;
+        }
+#endif  // (_DEBUG || _RELEASE_INTERNAL)
         default:
             va = m_ddiDecodeCtx->pCpDdiInterface->CreateBuffer(type, buf, size, numElements);
             if (va  == VA_STATUS_ERROR_UNSUPPORTED_BUFFERTYPE)

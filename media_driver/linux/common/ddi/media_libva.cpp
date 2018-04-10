@@ -3167,6 +3167,11 @@ VAStatus DdiMedia_DestroyBuffer (
             }
             DdiMediaUtil_FreeBuffer(buf);
             break;
+#if (_DEBUG || _RELEASE_INTERNAL)
+        case VATriggerCodecHangBufferType:
+            DdiMediaUtil_FreeBuffer(buf);
+            break;
+#endif // (_DEBUG || _RELEASE_INTERNAL)
         default: // do not handle any un-listed buffer type
             MOS_FreeMemory(buf->pData);
             break;

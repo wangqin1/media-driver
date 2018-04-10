@@ -448,6 +448,14 @@ VAStatus DdiDecodeAVC::RenderPicture(
             break;
         }
 
+#if (_DEBUG || _RELEASE_INTERNAL)
+        case VATriggerCodecHangBufferType:
+        {
+            m_ddiDecodeCtx->pCodecHal->m_osInterface->bTriggerCodecHang = *((uint32_t *)data) == 0 ? false : true;
+            break;
+        }
+#endif  // (_DEBUG || _RELEASE_INTERNAL)
+
         default:
             va = m_ddiDecodeCtx->pCpDdiInterface->RenderCencPicture(ctx, context, buf, data);
             break;

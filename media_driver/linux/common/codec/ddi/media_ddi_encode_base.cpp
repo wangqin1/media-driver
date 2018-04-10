@@ -1173,6 +1173,13 @@ VAStatus DdiEncodeBase::CreateBuffer(
         }
         break;
     }
+#if (_DEBUG || _RELEASE_INTERNAL)
+    case VATriggerCodecHangBufferType:
+    {
+        bufSize = size * elementsNum;
+        break;
+    }
+#endif  // (_DEBUG || _RELEASE_INTERNAL)
     default:
     {
         bufSize = size * elementsNum;

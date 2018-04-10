@@ -523,6 +523,44 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
         }
     }
 
+    int32_t perfData;
+    if (osContext->pPerfData != nullptr)
+    {
+        perfData = *(int32_t *)(osContext->pPerfData);
+    }
+    else
+    {
+        perfData = 0;
+    }
+
+#if (_DEBUG || _RELEASE_INTERNAL)
+    // trigger GPU HANG if bTriggerCodecHang is set
+    //dwComponentTag 3: decode,5: vpp,6: encode
+    //dwCallType     8: PAK(CODECHAL_ENCODE_PERFTAG_CALL_PAK_ENGINE)
+    //           34: PREENC
+    //           5: VPP
+    uint32_t      dwComponentTag;
+    uint32_t      dwCallType;
+
+    dwComponentTag = (perfData & 0xF000) >> 12;
+    dwCallType     = (perfData & 0xFC) >> 2;
+
+    if(osInterface->bTriggerCodecHang &&
+        (dwComponentTag == 3 || (dwComponentTag == 6 && dwCallType == 8) ||
+        (dwComponentTag == 6 && dwCallType == 34) ||
+        (dwComponentTag == 5 && dwCallType == 5))
+      )
+    {
+        cmdBuffer->pCmdBase[0] = 0x0e008002;
+        cmdBuffer->pCmdBase[1] = 0xffffffff;
+        cmdBuffer->pCmdBase[2] = 0x0;
+        cmdBuffer->pCmdBase[3] = 0x0;
+        cmdBuffer->pCmdBase[4] = 0x0;
+        cmdBuffer->pCmdBase[5] = 0x05000000;
+        cmdBuffer->pCmdPtr     = cmdBuffer->pCmdBase+6;
+    }
+#endif
+
     //Add Batch buffer End Command
     uint32_t batchBufferEndCmd = MI_BATCHBUFFER_END;
     if (MOS_FAILED(Mos_AddCommand(
@@ -537,16 +575,6 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
     // Now, we can unmap the video command buffer, since we don't need CPU access anymore.
     MOS_OS_CHK_NULL_RETURN(cmdBuffer->OsResource.pGfxResource);
     cmdBuffer->OsResource.pGfxResource->Unlock(m_osContext);
-
-    int32_t perfData;
-    if (osContext->pPerfData != nullptr)
-    {
-        perfData = *(int32_t *)(osContext->pPerfData);
-    }
-    else
-    {
-        perfData = 0;
-    }
 
     drm_clip_rect_t *cliprects     = nullptr;
     int32_t          num_cliprects = 0;
@@ -583,36 +611,10 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
 
     MOS_LINUX_BO *bad_cmd_bo;
     MOS_LINUX_BO *nop_cmd_bo;
-    uint32_t      dwComponentTag;
-    uint32_t      dwCallType;
 
-    // trigger GPU HANG if bTriggerCodecHang is set
     bad_cmd_bo = nullptr;
 
-    //dwComponentTag 3: decode,5: vpp,6: encode
-    //dwCallType     8: PAK(CODECHAL_ENCODE_PERFTAG_CALL_PAK_ENGINE)
-    //             34: PREENC
-    //             5: VPP
-    dwComponentTag = (perfData & 0xF000) >> 12;
-    dwCallType     = (perfData & 0xFC) >> 2;
-
-    if (osInterface->bTriggerCodecHang &&
-        (dwComponentTag == 3 || (dwComponentTag == 6 && dwCallType == 8) ||
-            (dwComponentTag == 6 && dwCallType == 34) ||
-            (dwComponentTag == 5 && dwCallType == 5)))
-    {
-        bad_cmd_bo = Mos_GetBadCommandBuffer_Linux(osInterface);
-        if (bad_cmd_bo)
-        {
-            ret = mos_bo_mrb_exec(bad_cmd_bo,
-                4096,
-                nullptr,
-                0,
-                0,
-                execFlag);
-        }
-    }
-    else if (osInterface->bTriggerVPHang == true)
+    if (osInterface->bTriggerVPHang == true)
     {
         bad_cmd_bo = Mos_GetBadCommandBuffer_Linux(osInterface);
 

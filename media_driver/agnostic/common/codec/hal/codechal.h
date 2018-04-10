@@ -334,16 +334,16 @@ public:
     //!
     CodechalDebugInterface * GetDebugInterface() { return m_debugInterface; }
 
+    //! \brief    Os Inteface
+    //! \details  Used to abstract all OS and KMD interactions such that CodecHal may be
+    //!           OS agnostic. Each HAL has a separate OS interface.
+    PMOS_INTERFACE          m_osInterface       = nullptr;
+
 protected:
     //! \brief    HW Inteface
     //! \details  Responsible for constructing all defined states and commands. 
     //!           Each HAL has a separate OS interface.
     CodechalHwInterface     *m_hwInterface      = nullptr;
-
-    //! \brief    Os Inteface
-    //! \details  Used to abstract all OS and KMD interactions such that CodecHal may be 
-    //!           OS agnostic. Each HAL has a separate OS interface.
-    PMOS_INTERFACE          m_osInterface       = nullptr;
 
     //! \brief    Interface used for debug dumps.
     //! \details  This interface is only valid for release internal and debug builds.
