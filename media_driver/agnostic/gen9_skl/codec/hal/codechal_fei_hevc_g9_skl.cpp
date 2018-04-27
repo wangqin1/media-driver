@@ -5745,8 +5745,8 @@ MOS_STATUS CodechalFeiHevcStateG9Skl::EncodeKernelFunctions()
         if (m_feiPicParams->MVPredictorInput) {
             CODECHAL_ENCODE_CHK_STATUS_RETURN(m_debugInterface->DumpBuffer(
                 &m_feiPicParams->resMVPredictor,
-                "HEVC_B_MBENC_ConstantData_In",
                 CodechalDbgAttr::attrInput,
+                "HEVC_B_MBENC_ConstantData_In",
                 m_feiPicParams->resMVPredictor.iSize,
                 0,
                 CODECHAL_MEDIA_STATE_HEVC_B_MBENC));

@@ -98,19 +98,6 @@ public:
         PMHW_KERNEL_STATE       pMbEncKernelStateInUse;
     };
 
-    //!
-    //! \struct EncStatsBuffers
-    //! \brief  MbEnc statistic buffers
-    //!
-    struct EncStatsBuffers
-    {
-        MOS_SURFACE             m_puStatsSurface;
-        MOS_SURFACE             m_8x8PuHaarDist;
-        CODECHAL_ENCODE_BUFFER  m_8x8PuFrameStats;
-        MOS_SURFACE             m_mbEncStatsSurface;
-        CODECHAL_ENCODE_BUFFER  m_mbEncFrameStats;
-    };
-
     static const uint32_t                       m_8x8PuFrameStatsSize = 32;                     //!< The size of 8x8 PU frame statistic buffer
     static const uint32_t                       m_mbEncFrameStatsSize = 32;
     static constexpr uint32_t                   NUM_FORMAT_CONV_FRAMES = (CODECHAL_MAX_CUR_NUM_REF_FRAME_HEVC + 1);  //!< Number of format conversion frames
@@ -141,7 +128,6 @@ public:
     PMHW_KERNEL_STATE                           m_mbEncKernelStates       = nullptr;  //!< Pointer to MbEnc kernel state
     PCODECHAL_ENCODE_BINDING_TABLE_GENERIC      m_mbEncKernelBindingTable = nullptr;  //!< MbEnc kernel binding table
     uint32_t                                    m_numMbEncEncKrnStates    = 0;        //!< Number of MbEnc kernel states
-    EncStatsBuffers                             m_encStatsBuffers;
 
     // ScalingAndConversion
     PMHW_KERNEL_STATE                      m_scalingAndConversionKernelState        = nullptr;  //!< Pointer to ScalingAndConversion kernel state
@@ -339,22 +325,6 @@ public:
     MOS_STATUS SendHwSliceEncodeCommand(
         PMOS_COMMAND_BUFFER             cmdBuffer,
         PMHW_VDBOX_HEVC_SLICE_STATE     params);
-
-    //!
-    //! \brief    Allocate encoder states resources
-    //!
-    //! \return   MOS_STATUS
-    //!           MOS_STATUS_SUCCESS if success, else fail reason
-    //!
-    MOS_STATUS AllocateEncStatsResources();
-
-    //!
-    //! \brief    Free encoder states resources
-    //!
-    //! \return   MOS_STATUS
-    //!           MOS_STATUS_SUCCESS if success, else fail reason
-    //!
-    MOS_STATUS FreeEncStatsResources();
 
     //! Inherited virtual functions
     virtual bool CheckSupportedFormat(PMOS_SURFACE surface);
