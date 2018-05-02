@@ -80,7 +80,6 @@ public:
         MOS_RESOURCE            resBrcImageStatesWriteBuffer[CODECHAL_ENCODE_RECYCLED_BUFFER_NUM];  //!< Write only HEVC BRC image state buffers
         uint32_t                dwBrcHcpPicStateSize;
         MOS_SURFACE             sBrcConstantDataBuffer[CODECHAL_ENCODE_RECYCLED_BUFFER_NUM];
-        MOS_RESOURCE            resMbBrcConstDataBuffer[CODECHAL_ENCODE_RECYCLED_BUFFER_NUM];
         uint32_t                dwBrcConstantSurfaceWidth;
         uint32_t                dwBrcConstantSurfaceHeight;
         MOS_SURFACE             sBrcIntraDistortionBuffer;                      //!< BRC Intra distortion buffer
@@ -88,10 +87,6 @@ public:
         uint32_t                dwMeBrcDistortionBottomFieldOffset;
         MOS_SURFACE             sBrcMbQpBuffer;
         uint32_t                dwBrcMbQpBottomFieldOffset;
-        MOS_RESOURCE            resBrcPicHeaderInputBuffer;
-        MOS_RESOURCE            resBrcPicHeaderOutputBuffer;
-        MOS_RESOURCE            resMbEncAdvancedDsh;
-        MOS_RESOURCE            resMbEncBrcBuffer;
         MOS_SURFACE             sBrcRoiSurface;                 // BRC ROI surface
         PMOS_SURFACE            pMbStatisticsSurface;
         PCODECHAL_ENCODE_BUFFER pMvAndDistortionSumSurface;
