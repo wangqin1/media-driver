@@ -3807,6 +3807,7 @@ void Mos_Specific_SetPerfTag(
         switch (pOsInterface->Component)
         {
             case COMPONENT_VPreP:
+            case COMPONENT_VPCommon:
                 ComponentTag = PERFTAG_VPREP;
                 break;
 
