@@ -35,6 +35,7 @@ MOS_STATUS CodechalAvcSfcState::CheckAndInitialize(
     bool                                deblockingEnabled)
 {
     MOS_STATUS eStatus = MOS_STATUS_SUCCESS;
+    uint8_t sfcPipeMode = MhwSfcInterface::SFC_PIPE_MODE_VDBOX;
 
     CODECHAL_HW_FUNCTION_ENTER;
 
@@ -42,7 +43,7 @@ MOS_STATUS CodechalAvcSfcState::CheckAndInitialize(
 
     if (CodecHal_PictureIsFrame(picParams->CurrPic) &&
         !picParams->seq_fields.mb_adaptive_frame_field_flag &&
-        IsSfcOutputSupported(decProcessingParams, MhwSfcInterface::SFC_PIPE_MODE_VDBOX))
+        IsSfcOutputSupported(decProcessingParams, sfcPipeMode))
     {
         this->m_deblockingEnabled = deblockingEnabled;
         this->m_inputFrameWidth   = width;
@@ -50,7 +51,7 @@ MOS_STATUS CodechalAvcSfcState::CheckAndInitialize(
 
         CODECHAL_HW_CHK_STATUS_RETURN(Initialize(
             decProcessingParams,
-            MhwSfcInterface::SFC_PIPE_MODE_VDBOX));
+            sfcPipeMode));
 
         m_sfcPipeOut = true;
     }
@@ -65,14 +66,35 @@ MOS_STATUS CodechalAvcSfcState::UpdateInputInfo(
 
     CODECHAL_HW_FUNCTION_ENTER;
 
-    sfcStateParams->sfcPipeMode                = MEDIASTATE_SFC_PIPE_VD_TO_SFC;
-    sfcStateParams->dwAVSFilterMode            = MEDIASTATE_SFC_AVS_FILTER_5x5;
+    if (m_sfcPipeMode == MhwSfcInterface::SFC_PIPE_MODE_VEBOX)
+    {
+        sfcStateParams->sfcPipeMode                = MEDIASTATE_SFC_PIPE_VE_TO_SFC;
+        sfcStateParams->dwAVSFilterMode            = MEDIASTATE_SFC_AVS_FILTER_8x8;
+        sfcStateParams->dwVDVEInputOrderingMode    = MEDIASTATE_SFC_INPUT_ORDERING_VE_4x8;
+        sfcStateParams->dwInputChromaSubSampling   = MEDIASTATE_SFC_CHROMA_SUBSAMPLING_420;
 
-    sfcStateParams->dwVDVEInputOrderingMode    = m_deblockingEnabled ? MEDIASTATE_SFC_INPUT_ORDERING_VD_16x16_SHIFT : MEDIASTATE_SFC_INPUT_ORDERING_VD_16x16_NOSHIFT;
-    sfcStateParams->dwInputChromaSubSampling   = MEDIASTATE_SFC_CHROMA_SUBSAMPLING_420;
+        // Adjust SFC input surface alignment.
+        // As VEBOX doesn't do scaling, input size equals to output size
+        // For the VEBOX output to SFC, width is multiple of 16 and height is multiple of 4
+        sfcStateParams->dwInputFrameWidth  = MOS_ALIGN_CEIL(m_inputSurface->dwWidth, m_sfcInterface->m_veWidthAlignment);
+        sfcStateParams->dwInputFrameHeight = MOS_ALIGN_CEIL(m_inputSurface->dwHeight, m_sfcInterface->m_veHeightAlignment);
 
-    sfcStateParams->dwInputFrameWidth  = m_inputFrameWidth;
-    sfcStateParams->dwInputFrameHeight = m_inputFrameHeight;
+    }
+    else if (m_sfcPipeMode == MhwSfcInterface::SFC_PIPE_MODE_VDBOX)
+    {
+        sfcStateParams->sfcPipeMode                = MEDIASTATE_SFC_PIPE_VD_TO_SFC;
+        sfcStateParams->dwAVSFilterMode            = MEDIASTATE_SFC_AVS_FILTER_5x5;
+
+        sfcStateParams->dwVDVEInputOrderingMode    = m_deblockingEnabled ? MEDIASTATE_SFC_INPUT_ORDERING_VD_16x16_SHIFT : MEDIASTATE_SFC_INPUT_ORDERING_VD_16x16_NOSHIFT;
+        sfcStateParams->dwInputChromaSubSampling   = MEDIASTATE_SFC_CHROMA_SUBSAMPLING_420;
+
+        sfcStateParams->dwInputFrameWidth  = m_inputFrameWidth;
+        sfcStateParams->dwInputFrameHeight = m_inputFrameHeight;
+    }
+    else
+    {
+        CODECHAL_HW_ASSERTMESSAGE("AVC SFC pipe mode is wrong!");
+    }
 
     return eStatus;
 }

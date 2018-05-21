@@ -1443,7 +1443,21 @@ MOS_STATUS CodechalDecodeAvc::AddPictureCmds(
     CODECHAL_DECODE_CHK_STATUS_RETURN(m_mfxInterface->AddMfxPipeModeSelectCmd(cmdBuf, &picMhwParams->PipeModeSelectParams));
 
 #ifdef _DECODE_PROCESSING_SUPPORTED
-    CODECHAL_DECODE_CHK_STATUS_RETURN(m_sfcState->AddSfcCommands(cmdBuf));
+    // VDBOX0+SFC/VDBOX1+VEBOX+SFC
+    if(m_osInterface->pOsContext->bKMDHasVCS2)
+    {
+        cmdBuf->iVdboxNodeIndex = m_osInterface->pfnGetVdboxNodeId(m_osInterface, cmdBuf);
+    }
+
+    if (!m_osInterface->pOsContext->bKMDHasVCS2 || cmdBuf->iVdboxNodeIndex == MOS_VDBOX_NODE_1)
+    {
+        CODECHAL_DECODE_CHK_STATUS_RETURN(m_sfcState->AddSfcCommands(cmdBuf));
+        m_sfcState->m_sfcPipeMode = MhwSfcInterface::SFC_PIPE_MODE_VDBOX;
+    }
+    else
+    {
+        m_sfcState->m_sfcPipeMode = MhwSfcInterface::SFC_PIPE_MODE_VEBOX;
+    }
 #endif
 
     CODECHAL_DECODE_CHK_STATUS_RETURN(m_mfxInterface->AddMfxSurfaceCmd(cmdBuf, &picMhwParams->SurfaceParams));
@@ -1864,6 +1878,12 @@ MOS_STATUS CodechalDecodeAvc::DecodePrimitiveLevel()
 #endif
     }
 #ifdef _DECODE_PROCESSING_SUPPORTED
+    // Send Vebox and SFC cmds
+    if (m_sfcState->m_sfcPipeOut && (m_sfcState->m_sfcPipeMode == MhwSfcInterface::SFC_PIPE_MODE_VEBOX))
+    {
+        CODECHAL_DECODE_CHK_STATUS_RETURN(m_sfcState->RenderStart());
+    }
+
     CODECHAL_DEBUG_TOOL(
         // Dump out downsampling result
         if (decProcessingParams && decProcessingParams->pOutputSurface)

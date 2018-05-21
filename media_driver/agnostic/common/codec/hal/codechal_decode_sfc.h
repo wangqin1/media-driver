@@ -140,6 +140,15 @@ public:
     MOS_STATUS RenderStart();
 
     //!
+    //! \brief    Create and Register VEBOX GPU context
+    //! \details  If pipemode is VEBOX and VEBOX GPU context
+    //!           is not created, need to create and register it.
+    //! \return   MOS_STATUS
+    //!           MOS_STATUS_SUCCESS if success, else fail reason
+    //!
+    MOS_STATUS CreateAndRegisterVeboxGpuContext();
+
+    //!
     //! \brief    Send SFC Avs State / Ief State Cmd
     //! \details  Send SFC Avs State / Ief State Cmd
     //! \param    [in] cmdBuffer
@@ -189,12 +198,12 @@ public:
     uint32_t     m_inputFrameHeight  = 0;        //!< Input Frame Height
     bool         m_sfcPipeOut        = false;    //!< Indicate Sfc Pipe Out is enabled
     PMOS_SURFACE m_sfcOutputSurface  = nullptr;  //!< Pointer of Sfc Output Surface
+    uint8_t      m_sfcPipeMode       = MhwSfcInterface::SFC_PIPE_MODE_VDBOX; //!< which FE engine pipe used
 
     bool         m_jpegInUse      = false;  //!< Indicate if Jpeg is in use
     uint8_t      m_jpegChromaType = 0;      //!< Jpeg Chroma Type
 
 protected:
-    uint8_t                     m_sfcPipeMode       = MhwSfcInterface::SFC_PIPE_MODE_VDBOX; //!< which FE engine pipe used
 
     PMOS_SURFACE m_inputSurface       = nullptr;  //!< Pointer of Input Surface
     PMOS_SURFACE m_veboxOutputSurface = nullptr;  //!< Pointer of Vebox Output Surface
@@ -207,6 +216,7 @@ protected:
     bool         m_colorFill = false;  //!< Indicate if color fill is needed
     bool         m_ief       = false;  //!< Indicate if IEF is needed for Surface
     bool         m_csc       = false;  //!< Indicate if YUV->RGB/YUV->YUV CSC is enabled
+    bool         m_isVeboxContextCreated = false;  //!< Indicate if GPU VEBOX context is created
 
     float        m_scaleX = 0;  //!< Horizontal Scaling Ratio
     float        m_scaleY = 0;  //!< Vertical Scaling Ratio

@@ -592,7 +592,11 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
     {
         if (osContext->bKMDHasVCS2)
         {
-            if (osContext->bPerCmdBufferBalancing && osInterface->pfnGetVdboxNodeId)
+            if (gpuNode == MOS_GPU_NODE_VE)
+            {
+                execFlag = I915_EXEC_VEBOX;
+            }
+            else if (osContext->bPerCmdBufferBalancing && osInterface->pfnGetVdboxNodeId)
             {
                 execFlag = GetVcsExecFlag(osInterface, cmdBuffer, gpuNode);
             }

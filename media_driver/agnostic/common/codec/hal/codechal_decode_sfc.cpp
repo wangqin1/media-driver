@@ -546,21 +546,10 @@ MOS_STATUS CodechalSfcState::Initialize(
 
     CODECHAL_HW_CHK_STATUS_RETURN(AllocateResources());
 
-    if (MhwSfcInterface::SFC_PIPE_MODE_VEBOX == sfcPipeMode)
+    if (MhwSfcInterface::SFC_PIPE_MODE_VEBOX == sfcPipeMode &&
+        !m_isVeboxContextCreated)
     {
-        // Create VEBOX Context
-        MOS_GPUCTX_CREATOPTIONS createOption;
-        CODECHAL_HW_CHK_STATUS_RETURN(m_osInterface->pfnCreateGpuContext(
-            m_osInterface,
-            MOS_GPU_CONTEXT_VEBOX,
-            MOS_GPU_NODE_VE,
-            &createOption));
-
-        // Register Vebox GPU context with the Batch Buffer completion event
-        // Ignore if creation fails
-        CODECHAL_HW_CHK_STATUS_RETURN(m_osInterface->pfnRegisterBBCompleteNotifyEvent(
-            m_osInterface,
-            MOS_GPU_CONTEXT_VEBOX));
+        CODECHAL_HW_CHK_STATUS_RETURN(CreateAndRegisterVeboxGpuContext());
     }
 
     return eStatus;
@@ -621,6 +610,11 @@ MOS_STATUS CodechalSfcState::RenderStart()
     MOS_STATUS eStatus = MOS_STATUS_SUCCESS;
 
     CODECHAL_HW_FUNCTION_ENTER;
+
+    if(!m_isVeboxContextCreated)
+    {
+        CODECHAL_DECODE_CHK_STATUS_RETURN(CreateAndRegisterVeboxGpuContext());
+    }
 
     MOS_SYNC_PARAMS syncParams = g_cInitSyncParams;
     syncParams.GpuContext       = m_decoder->GetVideoContext();
@@ -849,6 +843,31 @@ MOS_STATUS CodechalSfcState::InitializeSfcState(
     m_hwInterface    = hwInterface;
     m_veboxInterface = hwInterface->GetVeboxInterface();
     m_sfcInterface   = hwInterface->GetSfcInterface();  // No need to check null for pSfcInterface. It will be checked in IsSfcSupported().
+
+    return eStatus;
+}
+
+MOS_STATUS CodechalSfcState::CreateAndRegisterVeboxGpuContext()
+{
+    MOS_STATUS eStatus = MOS_STATUS_SUCCESS;
+
+    CODECHAL_HW_FUNCTION_ENTER;
+
+    // Create VEBOX Context
+    MOS_GPUCTX_CREATOPTIONS createOption;
+    CODECHAL_HW_CHK_STATUS_RETURN(m_osInterface->pfnCreateGpuContext(
+        m_osInterface,
+        MOS_GPU_CONTEXT_VEBOX,
+        MOS_GPU_NODE_VE,
+        &createOption));
+
+    // Register Vebox GPU context with the Batch Buffer completion event
+    // Ignore if creation fails
+    CODECHAL_HW_CHK_STATUS_RETURN(m_osInterface->pfnRegisterBBCompleteNotifyEvent(
+        m_osInterface,
+        MOS_GPU_CONTEXT_VEBOX));
+
+    m_isVeboxContextCreated = true;
 
     return eStatus;
 }

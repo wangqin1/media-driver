@@ -359,16 +359,6 @@ public:
         PCODEC_AVC_IQ_MATRIX_PARAMS matrixData);
 #endif
 
-private:
-    //!
-    //! \brief  Indicates whether or not the SFC is inuse
-    //! \return If SFC is inuse
-    //!
-    bool IsSfcInUse(CodechalSetting * codecHalSettings) override
-    {
-        return (codecHalSettings->downsamplingHinted && (MEDIA_IS_SKU(m_skuTable, FtrSFCPipe) && !MEDIA_IS_SKU(m_skuTable, FtrDisableVDBox2SFC)));
-    }
-
 public:
                                                                                         // Parameters passed by application
     uint16_t m_picWidthInMb;                                              //!< Picture Width in MB
