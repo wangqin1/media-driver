@@ -4372,6 +4372,7 @@ int32_t CmKernelRT::UpdateKernelData(
         cmKernelThreadSpaceParam->threadSpaceHeight = (uint16_t)threadSpaceHeight;
         m_threadSpace->GetDependencyPatternType(cmKernelThreadSpaceParam->patternType);
         m_threadSpace->GetWalkingPattern(cmKernelThreadSpaceParam->walkingPattern);
+        m_threadSpace->GetColorCountMinusOne(cmKernelThreadSpaceParam->colorCountMinusOne);
 
         CM_HAL_DEPENDENCY*     dependency;
         m_threadSpace->GetDependency( dependency);
