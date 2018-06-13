@@ -3608,11 +3608,12 @@ MOS_STATUS CodechalEncoderState::GetStatusReport(
             CODECHAL_DEBUG_TOOL(
                 m_statusReportDebugInterface->m_bufferDumpFrameNum = encodeStatus->dwStoredData;
             )
-            
+
             // Current command is executed
             if (m_osInterface->pfnIsGPUHung(m_osInterface))
             {
                 encodeStatusReport->CodecStatus = CODECHAL_STATUS_ERROR;
+                *(encodeStatusBuf->pData) += 1;
             }
             else if (encodeStatusReport->Func != CODECHAL_ENCODE_ENC_ID &&
                 encodeStatusReport->Func != CODECHAL_ENCODE_FEI_ENC_ID &&
@@ -3902,12 +3903,19 @@ MOS_STATUS CodechalEncoderState::GetStatusReport(
         }
         else
         {
+            //update GPU status, and skip the hang frame
+            if(m_osInterface->pfnIsGPUHung(m_osInterface))
+            {
+                *(encodeStatusBuf->pData) += 1;
+                reportsGenerated++;
+            }
+
             CODECHAL_ENCODE_VERBOSEMESSAGE("Status buffer %d is INCOMPLETE.", i);
             encodeStatusReport->CodecStatus = CODECHAL_STATUS_INCOMPLETE;
         }
         codecStatus[i] = *encodeStatusReport;
     }
-    
+
     encodeStatusBuf->wFirstIndex =
         (encodeStatusBuf->wFirstIndex + reportsGenerated) % CODECHAL_ENCODE_STATUS_NUM;
     CODECHAL_ENCODE_VERBOSEMESSAGE("wFirstIndex now becomes %d.", encodeStatusBuf->wFirstIndex);

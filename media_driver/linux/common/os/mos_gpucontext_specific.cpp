@@ -558,6 +558,8 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
         cmdBuffer->pCmdBase[4] = 0x0;
         cmdBuffer->pCmdBase[5] = 0x05000000;
         cmdBuffer->pCmdPtr     = cmdBuffer->pCmdBase+6;
+
+        osInterface->bTriggerCodecHang = false;
     }
 #endif
 
