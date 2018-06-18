@@ -95,6 +95,7 @@
 
 #ifdef _AVC_ENCODE_SUPPORTED
 #include "codechal_encode_avc_g9_skl.h"
+#include "codechal_fei_avc_g9_skl.h"
 #include "codechal_vdenc_avc_g9_skl.h"
 #include "codechal_fei_avc_g9.h"
 #endif
@@ -195,7 +196,7 @@ public:
 #ifdef _AVC_ENCODE_SUPPORTED
     using AvcEnc   = CodechalEncodeAvcEncG9Skl;
     using AvcVdenc = CodechalVdencAvcStateG9Skl;
-    using AvcFei   = CodechalEncodeAvcEncFeiG9;
+    using AvcFei   = CodechalEncodeAvcEncFeiG9Skl;
 #endif
 };
 
