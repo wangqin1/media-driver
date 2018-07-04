@@ -1756,6 +1756,7 @@ public:
 
 #if (_DEBUG || _RELEASE_INTERNAL)
     bool m_mmcUserFeatureUpdated;  //!< indicate if the user feature is updated with MMC state
+    bool m_hangIsTriggered                           = false; //!< GPU hang is triggered before
 #endif
 
     CmDevice *m_cmDev     = nullptr;

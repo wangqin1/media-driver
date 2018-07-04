@@ -558,6 +558,20 @@ MOS_STATUS CodechalEncoderState::Execute(void *params)
 
     CODECHAL_ENCODE_CHK_STATUS_RETURN(m_miInterface->SetWatchdogTimerThreshold(m_frameWidth, m_frameHeight));
 
+#if (_DEBUG || _RELEASE_INTERNAL)
+    if (m_standard == CODECHAL_HEVC)
+    {
+        if (m_osInterface->bTriggerCodecHang)
+        {
+            m_hangIsTriggered = true;
+        }
+        else
+        {
+            m_osInterface->bTriggerCodecHang = m_hangIsTriggered ? true : m_osInterface->bTriggerCodecHang;
+        }
+    }
+#endif
+
     if (m_codecFunction == CODECHAL_FUNCTION_FEI_PRE_ENC)
     {
         CODECHAL_ENCODE_CHK_STATUS_RETURN(ExecutePreEnc(encodeParams));
