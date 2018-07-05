@@ -220,6 +220,13 @@ private:
         return (codecHalSettings->sfcEnablingHinted && MEDIA_IS_SKU(m_skuTable, FtrSFCPipe));
     }
 
+    //!
+    //! \brief  Switch GPU context for GEN specific decoder
+    //! \return MOS_STATUS
+    //!         MOS_STATUS_SUCCESS if success, else fail reason
+    //!
+    MOS_STATUS SwitchGpuContext();
+
 protected:
     uint32_t                            m_dataSize;          //!< Data size of the bitstream
     uint32_t                            m_dataOffset;        //!< Data offset of the bitstream
