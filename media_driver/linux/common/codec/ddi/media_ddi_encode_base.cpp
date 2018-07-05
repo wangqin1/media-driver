@@ -334,6 +334,10 @@ VAStatus DdiEncodeBase::EncStatusReport(
                 return VA_STATUS_ERROR_ENCODING_ERROR;
             }
         }
+        else if (CODECHAL_STATUS_ERROR == encodeStatusReport[0].CodecStatus)
+        {
+            return VA_STATUS_ERROR_ENCODING_ERROR;
+        }
         else
         {
             // App will call twice StatusReport() for 1 frame, for the second call, just return.
@@ -393,6 +397,10 @@ VAStatus DdiEncodeBase::PreEncStatusReport(
                 //if HW didn't response in 5s, assume there is an error in encoding process, return error to App.
                 return VA_STATUS_ERROR_ENCODING_ERROR;
             }
+        }
+        else if (CODECHAL_STATUS_ERROR == encodeStatusReport[0].CodecStatus)
+        {
+            return VA_STATUS_ERROR_ENCODING_ERROR;
         }
         else
         {

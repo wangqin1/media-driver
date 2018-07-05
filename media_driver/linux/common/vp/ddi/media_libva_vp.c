@@ -2253,6 +2253,9 @@ VAStatus DdiVp_CreateBuffer(
     // only for VAProcFilterParameterBufferType and VAProcPipelineParameterBufferType
     if (vaBufType != VAProcFilterParameterBufferType
         && vaBufType != VAProcPipelineParameterBufferType
+#if (_DEBUG || _RELEASE_INTERNAL)
+        && vaBufType != VATriggerCodecHangBufferType
+#endif  //(_DEBUG || _RELEASE_INTERNAL)
         && (DdiCpInterface::CheckSupportedBufferForVp(vaBufType) != true)
         )
     {
@@ -2787,7 +2790,13 @@ VAStatus DdiVp_RenderPicture (
                 // User is not supposed to pass this buffer type:Refer va_vpp.h
                 VP_DDI_ASSERTMESSAGE("Invalid buffer type.");
                 return VA_STATUS_ERROR_INVALID_BUFFER;
-
+#if (_DEBUG || _RELEASE_INTERNAL)
+            case VATriggerCodecHangBufferType:
+            {
+                pVpCtx->pVpHal->m_osInterface->bTriggerCodecHang = *((uint32_t *)pData) == 0 ? false : true;
+                break;
+            }
+#endif  // (_DEBUG || _RELEASE_INTERNAL)
             default:
                 vaStatus = pVpCtx->pCpDdiInterface->RenderPictureForVp(pVaDrvCtx, vpCtxID, pBuf, pData);
                 DDI_CHK_RET(vaStatus,"Unsupported buffer type!");

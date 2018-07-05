@@ -534,7 +534,7 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
 
 #if (_DEBUG || _RELEASE_INTERNAL)
     // trigger GPU HANG if bTriggerCodecHang is set
-    //dwComponentTag 3: decode,5: vpp,6: encode
+    //dwComponentTag 3: decode,6: encode,9: vpp
     //dwCallType     8: PAK(CODECHAL_ENCODE_PERFTAG_CALL_PAK_ENGINE)
     //           34: PREENC
     //           5: VPP
@@ -547,7 +547,7 @@ MOS_STATUS GpuContextSpecific::SubmitCommandBuffer(
     if(osInterface->bTriggerCodecHang &&
         (dwComponentTag == 3 || (dwComponentTag == 6 && dwCallType == 8) ||
         (dwComponentTag == 6 && dwCallType == 34) ||
-        (dwComponentTag == 5 && dwCallType == 5))
+        (dwComponentTag == 9 && dwCallType == 5))
       )
     {
         cmdBuffer->pCmdBase[0] = 0x0e008002;

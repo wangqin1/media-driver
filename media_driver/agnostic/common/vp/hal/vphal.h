@@ -645,6 +645,7 @@ public:
     }
 
     HANDLE                      m_gpuAppTaskEvent;
+    PMOS_INTERFACE              m_osInterface;
 
 protected:
     // Internals
@@ -653,7 +654,6 @@ protected:
     MEDIA_WA_TABLE              *m_waTable;
 
     // States
-    PMOS_INTERFACE              m_osInterface;
     PRENDERHAL_INTERFACE        m_renderHal;
     PMHW_VEBOX_INTERFACE        m_veboxInterface;
     MhwCpInterface              *m_cpInterface;
