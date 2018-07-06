@@ -93,6 +93,8 @@ public:
     //!
     CommandBuffer *PickupOneCmdBuf(uint32_t size);
 
+    void UpperInsert(CommandBuffer *cmdBuf);
+
     //!
     //! \brief    Release command buffer from in-use status to standby status
     //! \details  This function designed for situations which need retire or 

@@ -182,7 +182,7 @@ void GpuContextMgr::DestroyGpuContext(GpuContext *gpuContext)
     {
         m_gpuContextArray.clear(); // clear whole array
     }
-
+    
     MOS_UnlockMutex(m_gpuContextArrayMutex);
 
     if (!found)
