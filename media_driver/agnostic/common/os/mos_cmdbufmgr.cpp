@@ -251,8 +251,8 @@ CommandBuffer *CmdBufMgr::PickupOneCmdBuf(uint32_t size)
 
 void CmdBufMgr::UpperInsert(CommandBuffer *cmdBuf)
 {
-    auto it = std::find_if(m_availableCmdBufPool.begin(), m_availableCmdBufPool.end(), [=](CommandBuffer * p1){return p1->GetCmdBufSize() <= cmdBuf->GetCmdBufSize();});
-    m_availableCmdBufPool.insert(it, cmdBuf);
+    auto it = std::find_if(m_availableCmdBufPool.begin(), m_availableCmdBufPool.end(), [=](CommandBuffer * p1){return p1->GetCmdBufSize() < cmdBuf->GetCmdBufSize();});
+    m_availableCmdBufPool.emplace(it, cmdBuf);
 }
 
 MOS_STATUS CmdBufMgr::ReleaseCmdBuf(CommandBuffer *cmdBuf)
