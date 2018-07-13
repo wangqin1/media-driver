@@ -2924,7 +2924,7 @@ MOS_STATUS CodechalEncoderState::StartStatusReport(
     }
 
     CODECHAL_ENCODE_CHK_STATUS_RETURN(m_perfProfiler->AddPerfCollectStartCmd((void*)this, m_osInterface, m_miInterface, cmdBuffer));
-    
+
     return eStatus;
 }
 
@@ -3496,9 +3496,12 @@ MOS_STATUS CodechalEncoderState::ResetStatusReport()
 
     encodeStatus->dwHeaderBytesInserted = m_headerBytesInserted;
     m_headerBytesInserted = 0;
-    m_storeData++;
-    encodeStatusBuf->wCurrIndex    = (encodeStatusBuf->wCurrIndex + 1) % CODECHAL_ENCODE_STATUS_NUM;
-    encodeStatusBufRcs->wCurrIndex = (encodeStatusBufRcs->wCurrIndex + 1) % CODECHAL_ENCODE_STATUS_NUM;
+    if (!m_disableStatusReport)
+    {
+        m_storeData++;
+        encodeStatusBuf->wCurrIndex    = (encodeStatusBuf->wCurrIndex + 1) % CODECHAL_ENCODE_STATUS_NUM;
+        encodeStatusBufRcs->wCurrIndex = (encodeStatusBufRcs->wCurrIndex + 1) % CODECHAL_ENCODE_STATUS_NUM;
+    }
 
     // clean up the Status for next frame
     encodeStatus =

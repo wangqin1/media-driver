@@ -1428,6 +1428,7 @@ public:
     bool                            m_computeContextEnabled = false;                //!< flag to indicate if compute context is enabled
     bool                            m_needCheckCpEnabled = false;                   //!< Indicate if checking cp is needed when prepare default nodes
     bool                            m_vdboxOneDefaultUsed = false;                  //!< Indicate VDBOX 1 is always used when prepare default nodes
+    bool                            m_disableStatusReport = false;                  //!< Indicate status report is not needed.
 
     CodechalEncoderGenState*        m_encoderGenState = nullptr;          //!< Pointer to Gen Specific Encoder State
     CodechalEncodeCscDs*            m_cscDsState = nullptr;               //!< pointer to CSC Downscaling state

@@ -8910,7 +8910,7 @@ MOS_STATUS CodechalEncodeAvcEnc::ExecutePreEnc(EncoderParams* encodeParams)
 
     if (preEncParams->bDisableMVOutput && preEncParams->bDisableStatisticsOutput)
     {
-        return MOS_STATUS_SUCCESS;
+        m_disableStatusReport = true;
     }
 
     m_osInterface->pfnIncPerfFrameID(m_osInterface);
@@ -8944,6 +8944,7 @@ MOS_STATUS CodechalEncodeAvcEnc::ExecutePreEnc(EncoderParams* encodeParams)
     CODECHAL_ENCODE_CHK_STATUS_MESSAGE_RETURN(ExecuteKernelFunctions(),
         "ENC failed.");
 
+
 #ifndef FEI_ENABLE_CMRT
     // Flush encode eStatus buffer
     CODECHAL_ENCODE_CHK_STATUS_MESSAGE_RETURN(ResetStatusReport(),
@@ -8956,6 +8957,7 @@ MOS_STATUS CodechalEncodeAvcEnc::ExecutePreEnc(EncoderParams* encodeParams)
     CODECHAL_ENCODE_CHK_STATUS_MESSAGE_RETURN(ResetStatusReport(),
         "ResetStatusReprot failed.");
 #endif
+    m_disableStatusReport = false;
 
     if (m_firstFrame == false && m_firstTwoFrames == true)
     {
