@@ -407,14 +407,6 @@ VAStatus DdiDecodeMPEG2::RenderPicture(
             break;
         }
 
-#if (_DEBUG || _RELEASE_INTERNAL)
-        case VATriggerCodecHangBufferType:
-        {
-            m_ddiDecodeCtx->pCodecHal->m_osInterface->bTriggerCodecHang = *((uint32_t *)data) == 0 ? false : true;
-            break;
-        }
-#endif  // (_DEBUG || _RELEASE_INTERNAL)
-
         default:
             va = VA_STATUS_ERROR_UNSUPPORTED_BUFFERTYPE;
             break;

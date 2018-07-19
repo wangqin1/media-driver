@@ -212,14 +212,6 @@ VAStatus DdiEncodeMpeg2::RenderPicture(
             m_encodeCtx->bMBQpEnable = true;
             break;
 
-#if (_DEBUG || _RELEASE_INTERNAL)
-        case VATriggerCodecHangBufferType:
-        {
-            m_encodeCtx->pCodecHal->m_osInterface->bTriggerCodecHang = *((uint32_t *)data) == 0 ? false : true;
-            break;
-        }
-#endif  // (_DEBUG || _RELEASE_INTERNAL)
-
         default:
             DDI_ASSERTMESSAGE("not supported buffer type.");
             break;

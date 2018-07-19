@@ -3300,32 +3300,6 @@ MOS_STATUS Mos_Specific_SubmitCommandBuffer(
         }
     }
 
-#if (_DEBUG || _RELEASE_INTERNAL)
-    // trigger GPU HANG if bTriggerCodecHang is set
-    PerfData = *(int32_t *)(pOsContext->pPerfData);
-    //dwComponentTag 3: decode,5: vpp,6: encode
-    //dwCallType     8: PAK(CODECHAL_ENCODE_PERFTAG_CALL_PAK_ENGINE)
-    //           34: PREENC
-    //           5: VPP
-    dwComponentTag = (PerfData & 0xF000) >> 12;
-    dwCallType     = (PerfData & 0xFC) >> 2;
-
-    if(pOsInterface->bTriggerCodecHang &&
-        (dwComponentTag == 3 || (dwComponentTag == 6 && dwCallType == 8) ||
-        (dwComponentTag == 6 && dwCallType == 34) ||
-        (dwComponentTag == 5 && dwCallType == 5))
-      )
-    {
-        pCmdBuffer->pCmdBase[0] = 0x0e008002;
-        pCmdBuffer->pCmdBase[1] = 0xffffffff;
-        pCmdBuffer->pCmdBase[2] = 0x0;
-        pCmdBuffer->pCmdBase[3] = 0x0;
-        pCmdBuffer->pCmdBase[4] = 0x0;
-        pCmdBuffer->pCmdBase[5] = 0x05000000;
-        pCmdBuffer->pCmdPtr     = pCmdBuffer->pCmdBase+6;
-    }
-#endif
-
     //Add Batch buffer End Command
     dwBatchBufferEndCmd = MI_BATCHBUFFER_END;
     if (MOS_FAILED(Mos_AddCommand(
