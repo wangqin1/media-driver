@@ -546,7 +546,9 @@ VAStatus MediaLibvaCaps::CreateEncAttributes(
             attrib.value |= VA_RC_ICQ | VA_RC_VCM;
         }
     }
-    if (IsAvcProfile(profile) && (entrypoint != VAEntrypointEncSliceLP))
+    if (IsAvcProfile(profile) &&
+            (entrypoint != VAEntrypointEncSliceLP ||
+            (entrypoint == VAEntrypointEncSliceLP && MEDIA_IS_SKU(&(m_mediaCtx->SkuTable), FtrEnableMediaKernels))))
     {
         attrib.value |= VA_RC_ICQ | VA_RC_VCM | VA_RC_QVBR;
     }
@@ -1046,6 +1048,7 @@ VAStatus MediaLibvaCaps::LoadAvcEncLpProfileEntrypoints()
                 {
                     AddEncConfig(m_encRcMode[j]);
                 }
+                AddEncConfig(VA_RC_QVBR);
             }
             AddProfileEntry(profile[i], VAEntrypointEncSliceLP, attributeList,
                     configStartIdx, m_encConfigs.size() - configStartIdx);
