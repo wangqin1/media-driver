@@ -7077,14 +7077,10 @@ MOS_STATUS CodechalEncodeAvcEncFeiG9::EncodeMbEncKernelFunctions()
         }
         CODECHAL_ENCODE_CHK_STATUS_RETURN(DispatchKernelMbEnc(&dispatchParams));
 
+        kernelRes->e = CM_NO_EVENT;
         CODECHAL_ENCODE_CHK_STATUS_RETURN(AddKernelMdf(m_cmDev, m_cmQueue, kernelRes->ppKernel[0], m_cmTask, kernelRes->pTS, kernelRes->e, true));
         if (IsMfeMbEncEnabled())
         {
-            int32_t dwTimeOutMs = -1;
-            kernelRes->e->WaitForTaskFinished(dwTimeOutMs);
-
-            m_cmQueue->DestroyEvent(kernelRes->e);
-
             m_mfeEncodeSharedState->encoders.clear();
             m_mfeEncodeSharedState->encoders.shrink_to_fit();
         }
