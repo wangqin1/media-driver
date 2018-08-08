@@ -276,6 +276,10 @@ VAStatus DdiEncodeAvc::ParseMiscParamRC(void *data)
             m_encodeCtx->uiTargetBitRate = seqParams->TargetBitRate;
             m_encodeCtx->uiMaxBitRate    = seqParams->MaxBitRate;
         }
+        if (VA_RC_QVBR == m_encodeCtx->uiRCMethod)
+        {
+            seqParams->ICQQualityFactor = encMiscParamRC->quality_factor;
+        }
     }
     //if RateControl method is VBR/CBR, we can set MBBRC to enable or disable
     if (VA_RC_CQP != m_encodeCtx->uiRCMethod)
