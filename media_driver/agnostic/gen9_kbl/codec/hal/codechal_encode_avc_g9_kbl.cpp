@@ -3439,6 +3439,11 @@ MOS_STATUS CodechalEncodeAvcEncG9Kbl::SetCurbeAvcBrcInitReset(PCODECHAL_ENCODE_A
         cmd.DW23.ACQP = seqParams->ICQQualityFactor;
     }
 
+    if (seqParams->RateControlMethod == RATECONTROL_AVBR)
+    {
+        usAVBRAccuracy    = seqParams->AVBRAccuracy;
+        usAVBRConvergence = seqParams->AVBRConvergence;
+    }
     cmd.DW10.AVBRAccuracy = usAVBRAccuracy;
     cmd.DW11.AVBRConvergence = usAVBRConvergence;
 
@@ -3596,6 +3601,9 @@ MOS_STATUS CodechalEncodeAvcEncG9Kbl::SetCurbeAvcFrameBrcUpdate(PCODECHAL_ENCODE
 
     if (seqParams->RateControlMethod == RATECONTROL_AVBR)
     {
+        usAVBRConvergence = seqParams->AVBRConvergence;
+        usAVBRAccuracy = seqParams->AVBRAccuracy;
+
         cmd.DW3.startGAdjFrame0 = (uint32_t)((10 * usAVBRConvergence) / (double)150);
         cmd.DW3.startGAdjFrame1 = (uint32_t)((50 * usAVBRConvergence) / (double)150);
         cmd.DW4.startGAdjFrame2 = (uint32_t)((100 * usAVBRConvergence) / (double)150);
