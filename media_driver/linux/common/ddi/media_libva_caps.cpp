@@ -868,69 +868,27 @@ VAStatus MediaLibvaCaps::CreateDecAttributes(
     (*attribList)[attrib.type] = attrib.value;
 
     attrib.type = VAConfigAttribMaxPictureWidth;
-
-    if (IsAvcProfile(profile))
+    attrib.value = CODEC_MAX_PIC_WIDTH;
+    if(profile == VAProfileJPEGBaseline)
     {
-        attrib.value = AVC_DECODE_MAX_WIDTH;
+        attrib.value = ENCODE_JPEG_MAX_PIC_WIDTH;
     }
-    else if (IsJpegProfile(profile))
+    if(IsAvcProfile(profile)||IsHevcProfile(profile))
     {
-        attrib.value = JPEG_DECODE_MAX_WIDTH;
+        attrib.value = CODEC_4K_MAX_PIC_WIDTH;
     }
-    else if (IsHevcProfile(profile))
-    {
-        attrib.value = HEVC_DECODE_MAX_WIDTH;
-    }
-    else if (IsMpeg2Profile(profile))
-    {
-        attrib.value = MPEG2_DECODE_MAX_WIDTH;
-    }
-    else if (IsVc1Profile(profile))
-    {
-        attrib.value = VC1_DECODE_MAX_WIDTH;
-    }
-    else if (IsVp9Profile(profile))
-    {
-        attrib.value = VP9_DECODE_MAX_WIDTH;
-    }
-    else
-    {
-        attrib.value = DEFAULT_DECODE_MAX_WIDTH;
-    }
-
     (*attribList)[attrib.type] = attrib.value;
 
     attrib.type = VAConfigAttribMaxPictureHeight;
-
-    if (IsAvcProfile(profile))
+    attrib.value = CODEC_MAX_PIC_HEIGHT;
+    if(profile == VAProfileJPEGBaseline)
     {
-        attrib.value = AVC_DECODE_MAX_HEIGHT;
+        attrib.value = ENCODE_JPEG_MAX_PIC_HEIGHT;
     }
-    else if (IsJpegProfile(profile))
+    if(IsAvcProfile(profile)||IsHevcProfile(profile))
     {
-        attrib.value = JPEG_DECODE_MAX_HEIGHT;
+        attrib.value = CODEC_4K_MAX_PIC_HEIGHT;
     }
-    else if (IsHevcProfile(profile))
-    {
-        attrib.value = HEVC_DECODE_MAX_HEIGHT;
-    }
-    else if (IsMpeg2Profile(profile))
-    {
-        attrib.value = MPEG2_DECODE_MAX_HEIGHT;
-    }
-    else if (IsVc1Profile(profile))
-    {
-        attrib.value = VC1_DECODE_MAX_HEIGHT;
-    }
-    else if (IsVp9Profile(profile))
-    {
-        attrib.value = VP9_DECODE_MAX_HEIGHT;
-    }
-    else
-    {
-        attrib.value = DEFAULT_DECODE_MAX_HEIGHT;
-    }
-
     (*attribList)[attrib.type] = attrib.value;
 
     attrib.type = VAConfigAttribEncryption;
