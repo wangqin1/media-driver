@@ -243,6 +243,11 @@ MOS_STATUS GpuContextSpecific::GetCommandBuffer(
             MOS_OS_CHK_STATUS_RETURN(cmdBuf->BindToGpuContext(this));
             m_cmdBufPool[m_nextFetchIndex] = cmdBuf;
         }
+        else
+        {
+            MOS_OS_ASSERTMESSAGE("Cmd buffer pool size is out of boundry!");
+            return MOS_STATUS_UNKNOWN;
+        }
 
         // util now, we got new command buffer from CmdBufMgr, next step to fill in the input command buffer
         MOS_OS_CHK_STATUS_RETURN(cmdBuf->GetResource()->ConvertToMosResource(&comamndBuffer->OsResource));
