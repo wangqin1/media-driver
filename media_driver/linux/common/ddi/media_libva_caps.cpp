@@ -877,7 +877,7 @@ VAStatus MediaLibvaCaps::CreateDecAttributes(
     {
         attrib.value = CODEC_4K_MAX_PIC_WIDTH;
     }
-    if(IsHevcProfile(profile) || IsVp9Profile(profile))
+    else if (IsHevcProfile(profile) || IsVp9Profile(profile))
     {
         if (IsVp9Profile(profile) && (MEDIA_IS_SKU(&(m_mediaCtx->SkuTable), FtrVP9VLD10bProfile2Decoding) == 0))
         {
