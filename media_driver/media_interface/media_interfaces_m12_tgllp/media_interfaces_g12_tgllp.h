@@ -124,6 +124,7 @@
 
 #ifdef _AVC_ENCODE_VME_SUPPORTED
 #include "codechal_encode_avc_g12.h"
+#include "codechal_fei_avc_g12.h"
 #endif
 #ifdef _AVC_ENCODE_VDENC_SUPPORTED
 #include "codechal_vdenc_avc_g12.h"
@@ -257,6 +258,7 @@ public:
 #endif
 #ifdef _AVC_ENCODE_VME_SUPPORTED
     using AvcEnc = CodechalEncodeAvcEncG12;
+    using AvcFei = CodechalEncodeAvcEncFeiG12;
 #endif
 #ifdef _AVC_ENCODE_VDENC_SUPPORTED
     using AvcVdenc = CodechalVdencAvcStateG12;

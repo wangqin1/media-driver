@@ -661,6 +661,12 @@ MOS_STATUS CodechalInterfacesG12Tgllp::Initialize(
                 encoder = MOS_New(Encode::AvcVdenc, hwInterface, debugInterface, info);
             #endif
             }
+            else if (CodecHalIsFeiEncode(info->CodecFunction))
+            {
+            #ifdef _AVC_ENCODE_VME_SUPPORTED
+                encoder = MOS_New(Encode::AvcFei, hwInterface, debugInterface, info);
+            #endif
+            }
             else
             {
             #ifdef _AVC_ENCODE_VME_SUPPORTED
