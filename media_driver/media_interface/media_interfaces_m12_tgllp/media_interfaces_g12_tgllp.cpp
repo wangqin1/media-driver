@@ -475,8 +475,7 @@ MOS_STATUS CodechalInterfacesG12Tgllp::Initialize(
     {
         PLATFORM platform = {};
         osInterface->pfnGetPlatform(osInterface, &platform);
-        if((platform.usDeviceID != 0x4905)
-            && (platform.usDeviceID != 0x4906)
+        if((platform.usDeviceID != 0x4906)
             && (platform.usDeviceID != 0x4908))
         {
             disableScalability = true;
