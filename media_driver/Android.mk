@@ -482,6 +482,7 @@ LOCAL_SRC_FILES := \
     agnostic/gen12/codec/hal/codechal_encode_sw_scoreboard_g12.cpp \
     agnostic/gen12/codec/hal/codechal_encode_sw_scoreboard_mdf_g12.cpp \
     agnostic/gen12/codec/hal/codechal_encode_avc_g12.cpp \
+    agnostic/gen12/codec/hal/codechal_fei_avc_g12.cpp \
     agnostic/gen12/codec/hal/codechal_vdenc_avc_g12.cpp \
     agnostic/gen12/codec/hal/codechal_mmc_encode_avc_g12.cpp \
     agnostic/gen12/codec/hal/codechal_encode_hevc_table_g12.cpp \
