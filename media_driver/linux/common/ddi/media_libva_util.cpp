@@ -313,12 +313,12 @@ VAStatus DdiMediaUtil_AllocateSurface(
 
             if( bo != nullptr )
             {
-                uint32_t swizzle_mode;
+                //uint32_t swizzle_mode;
 
                 pitch = mediaSurface->pSurfDesc->uiPitches[0];
 
                 //Overwirte the tileformat matches with the right buffer
-                mos_bo_get_tiling(bo, &tileformat, &swizzle_mode);
+                //mos_bo_get_tiling(bo, &tileformat, &swizzle_mode);
             }
             else
             {

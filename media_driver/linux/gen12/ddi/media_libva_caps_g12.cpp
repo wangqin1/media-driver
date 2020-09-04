@@ -36,6 +36,10 @@
 #include "media_ddi_encode_const.h"
 #include "media_ddi_decode_const_g12.h"
 
+#ifdef ANDROID
+#include <va/va_android.h>
+#endif
+
 #ifndef VA_CENC_TYPE_NONE
 #define VA_CENC_TYPE_NONE 0x00000000
 #endif
