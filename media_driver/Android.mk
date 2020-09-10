@@ -721,8 +721,9 @@ LOCAL_SRC_FILES := \
     media_driver_next/agnostic/common/shared/statusreport/media_status_report.cpp \
     media_driver_next/agnostic/common/shared/mmc/media_mem_compression.cpp \
     media_driver_next/agnostic/common/shared/bufferMgr/media_allocator.cpp \
-    media_driver_next/agnostic/common/shared/mediacopy/media_copy.cpp \
     media_driver_next/agnostic/common/shared/mediacopy/media_blt.cpp \
+    media_driver_next/agnostic/common/shared/mediacopy/media_copy.cpp \
+    media_driver_next/agnostic/common/shared/mediacopy/media_vebox_copy.cpp \
     media_driver_next/agnostic/common/shared/media_sfc_interface/media_sfc_interface.cpp \
     media_driver_next/agnostic/common/shared/media_sfc_interface/media_sfc_render.cpp \
     media_driver_next/agnostic/common/shared/media_sfc_interface/media_vdbox_sfc_render.cpp \
@@ -736,12 +737,16 @@ LOCAL_SRC_FILES := \
     media_driver_next/agnostic/common/vp/hal/feature_manager/sw_filter_pipe.cpp \
     media_driver_next/agnostic/common/vp/hal/feature_manager/sw_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/feature_manager/sw_filter_handle.cpp \
+    media_driver_next/agnostic/common/vp/hal/feature_manager/vp_kernelset.cpp \
+    media_driver_next/agnostic/common/vp/hal/features/vp_ace_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/features/vp_csc_filter.cpp \
+    media_driver_next/agnostic/common/vp/hal/features/vp_dn_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/features/vp_filter.cpp \
+    media_driver_next/agnostic/common/vp/hal/features/vp_procamp_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/features/vp_rot_mir_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/features/vp_scaling_filter.cpp \
-    media_driver_next/agnostic/common/vp/hal/features/vp_dn_filter.cpp \
-    media_driver_next/agnostic/common/vp/hal/features/vp_ace_filter.cpp \
+    media_driver_next/agnostic/common/vp/hal/features/vp_ste_filter.cpp \
+    media_driver_next/agnostic/common/vp/hal/features/vp_tcc_filter.cpp \
     media_driver_next/agnostic/common/vp/hal/mmc/vp_mem_compression.cpp \
     media_driver_next/agnostic/common/vp/hal/packet/vp_cmd_packet.cpp \
     media_driver_next/agnostic/common/vp/hal/packet/vp_packet_pipe.cpp \
@@ -750,6 +755,7 @@ LOCAL_SRC_FILES := \
     media_driver_next/agnostic/common/vp/hal/packet/vp_vebox_cmd_packet.cpp \
     media_driver_next/agnostic/common/vp/hal/pipeline/vp_pipeline.cpp \
     media_driver_next/agnostic/common/vp/hal/pipeline/vp_pipeline_adapter.cpp \
+    media_driver_next/agnostic/common/vp/hal/platform_interface/vp_platform_interface.cpp \
     media_driver_next/agnostic/common/vp/hal/scalability/vp_scalability_option.cpp \
     media_driver_next/agnostic/common/vp/hal/scalability/vp_scalability_singlepipe.cpp \
     media_driver_next/agnostic/common/vp/hal/statusreport/vp_status_report.cpp \
