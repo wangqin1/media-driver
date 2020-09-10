@@ -113,7 +113,7 @@ enum DdiSurfaceFormat
 #define MOS_INVALID_ALLOC_INDEX                         -1
 #define MOS_MAX_REGS                              128 //32
 #ifdef ANDROID
-#define MOS_STATUS_REPORT_DEFAULT                 0
+#define MOS_STATUS_REPORT_DEFAULT                 1 
 #else
 #define MOS_STATUS_REPORT_DEFAULT                 1
 #endif
