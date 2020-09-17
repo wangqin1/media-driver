@@ -1243,6 +1243,19 @@ VAStatus DdiEncodeBase::CreateBuffer(
         }
         break;
     }
+#if VA_CHECK_VERSION(1, 10, 0)
+    case VAContextParameterUpdateBufferType:
+    {
+        bufSize       = size;
+        if (bufSize < sizeof(VAContextParameterUpdateBuffer))
+        {
+            va = VA_STATUS_ERROR_INVALID_PARAMETER;
+            CleanUpBufferandReturn(buf);
+            return va;
+        }
+        break;
+    }
+#endif
     default:
     {
         bufSize = size * elementsNum;
