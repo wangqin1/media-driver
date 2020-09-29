@@ -4662,10 +4662,11 @@ MOS_STATUS CodechalVdencHevcStateG12::SetConstDataHuCBrcUpdate()
 
     if (m_lookaheadDepth > 0)
     {
-        hucConstData->UPD_TR_TargetSize_U32 = m_hevcPicParams->TargetFrameSize << 3;//bit to byte
         hucConstData->UPD_LA_TargetFulness_U32 = m_targetBufferFulness;
         hucConstData->UPD_deltaQP = 0;// For PPyramid
     }
+
+    hucConstData->UPD_TR_TargetSize_U32 = m_hevcPicParams->TargetFrameSize << 3;// byte to bit
 
     m_osInterface->pfnUnlockResource(m_osInterface, &m_vdencBrcConstDataBuffer[m_currRecycledBufIdx]);
 
