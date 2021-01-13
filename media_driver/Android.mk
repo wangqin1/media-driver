@@ -614,6 +614,7 @@ LOCAL_SRC_FILES := \
     linux/common/os/mos_gpucontext_specific_ext.cpp \
     linux/common/os/mos_os_virtualengine_scalability_specific.cpp \
     linux/common/os/mos_os_virtualengine_singlepipe_specific.cpp \
+    linux/common/os/memory_policy_manager_specific.cpp \
     linux/common/renderhal/renderhal_linux.cpp \
     linux/common/renderhal/renderhal_dsh_specific.c \
     linux/common/renderhal/hal_oca_interface.cpp \
