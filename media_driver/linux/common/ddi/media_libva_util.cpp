@@ -424,7 +424,7 @@ VAStatus DdiMediaUtil_AllocateSurface(
         }
 
         // For secure/compressible external surface, call legacy gmm interface due to limitation of new interface
-        if (cpTag || bMemCompEnable)
+        if (cpTag || bMemCompEnable || (mediaSurface->pSurfDesc->uiVaMemType != VA_SURFACE_ATTRIB_MEM_TYPE_VA))
         {
             MOS_ZeroMemory(&gmmParams, sizeof(gmmParams));
             gmmParams.BaseWidth         = width;
