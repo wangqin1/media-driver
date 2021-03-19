@@ -66,6 +66,16 @@ class CmSurface3D;
 class CmSampler8x8;
 class CmSampler8x8State_RT;
 
+//! \brief     Struct software score board
+struct CM_SW_SCOREBOARD_UNIT
+{
+    uint32_t width;
+    uint32_t height;
+    CM_DEPENDENCY_PATTERN dependencyPatternType;
+    CmSurface2D *swBoardSurf; // SWSB 2D atomic
+    uint32_t *swBoard; // SWSB system memory store
+};
+
 //! \brief    Class CmDeviceRTBase definitions
 class CmDeviceRTBase: public CmDevice
 {
@@ -594,6 +604,8 @@ protected:
     uint32_t       m_kernelsLoaded;
 
     bool           m_preloadKernelEnabled;
+
+    CM_SW_SCOREBOARD_UNIT *m_swScoreBoardUnit;
 
     static const uint32_t m_maxPrintBuffer;
 private:
