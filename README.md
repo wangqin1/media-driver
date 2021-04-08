@@ -25,16 +25,17 @@ Equivalents for other distributions should work.
 
 ## Dependencies
 
-* [Libva](https://github.com/intel/libva)
-* [GmmLib](https://github.com/intel/gmmlib)(Please check [comparability with GmmLib](https://github.com/intel/media-driver/wiki/Comparability-with-GmmLib))
+* [Libva](https://github.com/VCDP/libva)
+* [GmmLib](https://github.com/VCDP/gmmlib)(Please check [comparability with GmmLib](https://github.com/intel/media-driver/wiki/Comparability-with-GmmLib))
 
 ## Building
 
-1. Build and install libva master
-2. Build and install gmmlib master
-3. Get media repo and format the workspace folder as below (suggest the workspace to be a dedicated one for media driver build):
+1. Build and install libva (intel-media-sg1 branch or intel-media-sg1-pv* tag)
+2. Build and install gmmlib master (intel-media-sg1 branch or intel-media-sg1-pv* tag)
+3. Get the [media-driver](https://github.com/VCDP/media-driver.git) repo. Checkout intel-media-sg1 branch or intel-media-sg1-pv* tag. Then format the workspace folder as below. Suggest the workspace to be a dedicated one for media driver build and gmmlib put to the same folder as media-driver.
 ```
 <workspace>
+    |- gmmlib
     |- media-driver
 ```
 4. 
@@ -47,7 +48,7 @@ $ cd <workspace>/build_media
 ```
 6. 
 ```
-$ cmake ../media-driver
+$ cmake ../ -DBUILD_TYPE=release -DENABLE_PRODUCTION_KMD=ON -DBUILD_ALONG_WITH_CMRTLIB=1 -DGMM_DYNAMIC_MOCS_TABLE=TRUE
 ```
 7. 
 ```
@@ -82,6 +83,7 @@ export LIBVA_DRIVER_NAME=iHD
 * ICL (Ice Lake)
 * JSL (Jasper Lake)/EHL (Elkhart Lake)
 * TGL (Tiger Lake)
+* SG1
 
 
 ## Components and Features
