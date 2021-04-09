@@ -359,6 +359,11 @@ MOS_STATUS VPHAL_VEBOX_STATE::Initialize(
     pVeboxState->iPrvFrameID          = FIRST_FRAME;
     pVeboxState->bFirstFrame          = true;
 
+    // Initialize Front End CSC
+    pVeboxState->fFeCscCoeff          = (float*)MOS_AllocAndZeroMemory(sizeof(float)*9);
+    pVeboxState->fFeCscInOffset       = (float*)MOS_AllocAndZeroMemory(sizeof(float)*3);
+    pVeboxState->fFeCscOutOffset      = (float*)MOS_AllocAndZeroMemory(sizeof(float)*3);
+
 finish:
     return eStatus;
 }
@@ -372,6 +377,10 @@ finish:
 void VPHAL_VEBOX_STATE::Destroy()
 {
     PVPHAL_VEBOX_STATE                  pVeboxState = this;
+
+    MOS_Delete(pVeboxState->fFeCscCoeff);
+    MOS_Delete(pVeboxState->fFeCscInOffset);
+    MOS_Delete(pVeboxState->fFeCscOutOffset);
 
     if (pVeboxState)
     {
@@ -2516,6 +2525,11 @@ void VPHAL_VEBOX_STATE::VeboxSetRenderingFlags(
         }       
     }
 
+    if (pSrc->p3DLutParams)
+    {
+        pRenderData->bBT2020TosRGB = false;
+        pRenderData->b2PassesCSC   = false;
+    }
 finish:
     return;
 }
@@ -3851,7 +3865,7 @@ bool VPHAL_VEBOX_STATE::VeboxIs2PassesCSCNeeded(
             (pRenderTarget->ColorSpace == CSpace_stRGB)           ||
             (pRenderTarget->ColorSpace == CSpace_sRGB))
         {
-            b2PassesCSCNeeded = true;
+            b2PassesCSCNeeded = (pRenderData->bHdr3DLut) ? false : true;
         }
     }
 
@@ -4265,6 +4279,7 @@ MOS_STATUS VpHal_RndrRenderVebox(
     RECT                     rcTempIn       = {};
     PVPHAL_VEBOX_STATE       pVeboxState    = nullptr;
     PVPHAL_VEBOX_RENDER_DATA pRenderData    = nullptr;
+    bool                     bVeboxOutput   = false;
 
     //------------------------------------------------------
     VPHAL_RENDER_ASSERT(pRenderer);
@@ -4280,6 +4295,7 @@ MOS_STATUS VpHal_RndrRenderVebox(
     pVeboxState             = (PVPHAL_VEBOX_STATE)pRenderState;
     pRenderData             = pVeboxState->GetLastExecRenderData();
     pInSurface              = (PVPHAL_SURFACE)pRenderPassData->pSrcSurface;
+    bVeboxOutput            = false;
 
     pRenderPassData->bOutputGenerated  = false;
 
@@ -4385,16 +4401,29 @@ MOS_STATUS VpHal_RndrRenderVebox(
                 pRenderData);
         }
 
+        pRenderPassData->pOutSurface    = pOutSurface;
+
+        bVeboxOutput = IS_VPHAL_OUTPUT_PIPE_VEBOX(pRenderData);
         if (pRenderData->bHdr3DLut)
         {
-            VpHal_VeboxAllocateTempSurfaces(pRenderer, pcRenderParams, pRenderData, pcRenderParams->pSrc[0], pcRenderParams->pTarget[0], &pRenderer->IntermediateSurface);
-            SET_VPHAL_OUTPUT_PIPE(pRenderData, VPHAL_OUTPUT_PIPE_MODE_VEBOX);
-            SET_VEBOX_EXECUTION_MODE(pVeboxState->m_pVeboxExecState, VEBOX_EXEC_MODE_0);
-            pOutSurface                     = &pRenderer->IntermediateSurface;
-            pRenderData->pRenderTarget      = &pRenderer->IntermediateSurface;
+            PVPHAL_SURFACE pTargetSurface = (PVPHAL_SURFACE)pcRenderParams->pTarget[0];
+            // If VEBOX output, write the output to render target
+            if (bVeboxOutput)
+            {
+                pRenderData->pRenderTarget       = pTargetSurface;
+                pRenderPassData->pOutSurface     = pTargetSurface;
+            }
+            else
+            {
+                VpHal_VeboxAllocateTempSurfaces(pRenderer, pcRenderParams, pRenderData, pcRenderParams->pSrc[0], pcRenderParams->pTarget[0], &pRenderer->IntermediateSurface);
+                SET_VPHAL_OUTPUT_PIPE(pRenderData, VPHAL_OUTPUT_PIPE_MODE_VEBOX);
+                SET_VEBOX_EXECUTION_MODE(pVeboxState->m_pVeboxExecState, VEBOX_EXEC_MODE_0);
+                pOutSurface                       = &pRenderer->IntermediateSurface;
+                pRenderData->pRenderTarget        = &pRenderer->IntermediateSurface;
+                // If VEBOX does not output directly, write the output to intermediate surface
+                pRenderPassData->pOutSurface      = pOutSurface;
+            }
         }
-
-        pRenderPassData->pOutSurface    = pOutSurface;
 
         //Disable cache for output surface in vebox only condition
         if (IS_VPHAL_OUTPUT_PIPE_VEBOX(pRenderData))
@@ -4471,7 +4500,7 @@ MOS_STATUS VpHal_RndrRenderVebox(
             pRenderPassData->bOutputGenerated = true;
         }
 
-        if (pRenderData->bHdr3DLut)
+        if (pRenderData->bHdr3DLut && !bVeboxOutput)
         {
             pRenderPassData->bOutputGenerated   = true;
             pRenderPassData->bCompNeeded        = true;
@@ -4544,6 +4573,11 @@ VPHAL_VEBOX_STATE::VPHAL_VEBOX_STATE(
         fCscInOffset[i] = 0.0f;
         fCscOutOffset[i] = 0.0f;
     }
+
+    // Front End CSC
+    fFeCscCoeff                = nullptr;
+    fFeCscInOffset             = nullptr;
+    fFeCscOutOffset            = nullptr;
 
     for (i = 0; i < 2; i++)
     {
@@ -4998,6 +5032,7 @@ MOS_STATUS VPHAL_VEBOX_RENDER_DATA::Init()
     bTFF           = false;
     bTopField      = false;
     bBeCsc         = false;
+    bFeCsc         = false;
     bVeboxBypass   = false;
     b60fpsDi       = false;
     bQueryVariance = false;
