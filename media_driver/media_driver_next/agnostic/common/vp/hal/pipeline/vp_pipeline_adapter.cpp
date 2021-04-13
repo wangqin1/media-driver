@@ -116,8 +116,7 @@ void VpPipelineAdapter::Destroy()
         m_vpPipeline = nullptr;
     }
 
-    vp::VpPlatformInterface *pIntf = &m_vpPlatformInterface;
-    MOS_Delete(pIntf);
+    delete &m_vpPlatformInterface;
 }
 
 MOS_STATUS VpPipelineAdapter::Render(PCVPHAL_RENDER_PARAMS pcRenderParams)
