@@ -3116,6 +3116,7 @@ MOS_STATUS CodechalEncodeAvcEncG12::SetCurbeAvcFrameBrcUpdate(PCODECHAL_ENCODE_A
     }
 
     cmd.m_frameBrcUpdateCurbeCmd.m_dw15.m_enableROI = params->ucEnableROI;
+    cmd.m_frameBrcUpdateCurbeCmd.m_dw16.m_enableIFrameBoost = 0;
 
     MHW_VDBOX_AVC_SLICE_STATE sliceState;
     MOS_ZeroMemory(&sliceState, sizeof(sliceState));

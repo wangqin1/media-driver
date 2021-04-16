@@ -2749,7 +2749,7 @@ public:
         {
             struct
             {
-                uint32_t m_reserved;
+                uint32_t m_enableIFrameBoost;
             };
             struct
             {
