@@ -94,9 +94,7 @@ VAStatus     DdiVp_UpdateProcPipelineForwardReferenceFrames(PDDI_VP_CONTEXT pVpC
 VAStatus     DdiVp_UpdateProcPipelineBackwardReferenceFrames(PDDI_VP_CONTEXT pVpCtx, VADriverContextP pVaDrvCtx, PVPHAL_SURFACE pVpHalSrcSurf, VAProcPipelineParameterBuffer* pPipelineParam);
 VAStatus     DdiVp_UpdateVphalTargetSurfColorSpace(VADriverContextP, PDDI_VP_CONTEXT, VAProcPipelineParameterBuffer*, uint32_t targetIndex);
 VAStatus     DdiVp_BeginPictureInt(VADriverContextP pVaDrvCtx, PDDI_VP_CONTEXT pVpCtx, VASurfaceID vaSurfID);
-#if VA_CHECK_VERSION(1, 12, 0)
 VAStatus     DdiVp_SetProcFilter3DLutParams(VADriverContextP pVaDrvCtx, PDDI_VP_CONTEXT pVpCtx, uint32_t uSurfIndex, VAProcFilterParameterBuffer3DLUT* p3DLutParamBuff);
-#endif
 #if (VA_MAJOR_VERSION < 1)
 VAStatus     DdiVp_GetColorSpace(PVPHAL_SURFACE pVpHalSurf, VAProcColorStandardType colorStandard, uint32_t flag);
 #else
@@ -2171,7 +2169,6 @@ DdiVp_UpdateFilterParamBuffer(
                                             uSurfIndex,
                                             (VAProcFilterParameterBufferHDRToneMapping*) pData);
             break;
-#if VA_CHECK_VERSION(1, 12, 0)
         case VAProcFilter3DLUT:
             vaStatus = DdiVp_SetProcFilter3DLutParams(
                                             pVaDrvCtx,
@@ -2179,7 +2176,6 @@ DdiVp_UpdateFilterParamBuffer(
                                             uSurfIndex,
                                             (VAProcFilterParameterBuffer3DLUT*) pData);
             break;
-#endif
         case VAProcFilterNone:
             vaStatus = VA_STATUS_ERROR_INVALID_PARAMETER;
             break;
@@ -2817,7 +2813,6 @@ DdiVp_SetProcFilterHdrTmParams(
 
     return eStatus;
 }
-#if VA_CHECK_VERSION(1, 12, 0)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //! \purpose Three Three-Dimensional Look Up Table(3DLUT) filter params for VPHAL input surface
 //! \params
@@ -2887,7 +2882,6 @@ DdiVp_SetProcFilter3DLutParams(
 
     return eStatus;
 }
-#endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //! \purpose Create Media Buffer
 //! \params
@@ -4404,7 +4398,6 @@ DdiVp_QueryVideoProcFilterCaps (
             }
             break;
         }
-#if VA_CHECK_VERSION(1, 12, 0)
         case VAProcFilter3DLUT:
             uExistCapsNum = 0;
             *num_filter_caps = uExistCapsNum;
@@ -4459,7 +4452,6 @@ DdiVp_QueryVideoProcFilterCaps (
                 }
             }
             break;
-#endif
         case VAProcFilterCount:
         case VAProcFilterNone:
             return VA_STATUS_ERROR_INVALID_VALUE;
