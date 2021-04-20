@@ -2072,7 +2072,7 @@ int32_t CmThreadSpaceRT::UpdateDependency()
 
     if(cm_queue_rt)
     {
-        CmEvent *cm_event = nullptr;
+        CmEvent *cm_event = CM_NO_EVENT;
         CM_CHK_CMSTATUS_RETURN(cm_queue_rt->EnqueueCopyGPUToGPU(m_swBoardSurf , m_swScoreBoardUnit->swBoardSurf, cm_queue_rt->GetQueueOption().QueueType, cm_event));
     }
     else
