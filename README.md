@@ -31,7 +31,7 @@ Equivalents for other distributions should work.
 ## Building
 
 1. Build and install libva (intel-media-sg1 branch or intel-media-sg1-pv* tag)
-2. Build and install gmmlib master (intel-media-sg1 branch or intel-media-sg1-pv* tag)
+2. Build and install gmmlib (intel-media-sg1 branch or intel-media-sg1-pv* tag)
 3. Get the [media-driver](https://github.com/VCDP/media-driver.git) repo. Checkout intel-media-sg1 branch or intel-media-sg1-pv* tag. Then format the workspace folder as below. Suggest the workspace to be a dedicated one for media driver build and gmmlib put to the same folder as media-driver.
 ```
 <workspace>
@@ -48,7 +48,7 @@ $ cd <workspace>/build_media
 ```
 6. 
 ```
-$ cmake ../ -DBUILD_TYPE=release -DENABLE_PRODUCTION_KMD=ON -DBUILD_ALONG_WITH_CMRTLIB=1 -DGMM_DYNAMIC_MOCS_TABLE=TRUE
+$ cmake ../ -DBUILD_TYPE=release -DENABLE_PRODUCTION_KMD=ON -DBUILD_ALONG_WITH_CMRTLIB=1 -DGMM_DYNAMIC_MOCS_TABLE=TRUE -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib64
 ```
 7. 
 ```
@@ -62,9 +62,8 @@ $ sudo make install
 ```
 This will install the following files (e.g. on Ubuntu):
 ```
--- Installing: /usr/lib/x86_64-linux-gnu/dri/iHD_drv_video.so
--- Installing: /etc/profile.d/intel-media.sh
--- Installing: /usr/lib/x86_64-linux-gnu/igfxcmrt64.so
+-- Installing: /opt/intel/mediasdk/lib64/iHD_drv_video.so
+-- Installing: /opt/intel/mediasdk/lib64/lib/igfxcmrt.so
 ```
 
 For iHD_drv_video.so please export related LIBVA environment variables.
