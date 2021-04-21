@@ -70,7 +70,7 @@ MOS_STATUS VphalInterfacesG12Tgllp::Initialize(
     bApogeiosEnable = UserFeatureData.bData ? true : false;
     if (bApogeiosEnable)
     {
-        vp::VpPlatformInterface *vpPlatformInterface = new vp::VpPlatformInterfaceG12Tgllp(osInterface);
+        vp::VpPlatformInterface *vpPlatformInterface = MOS_New(vp::VpPlatformInterfaceG12Tgllp, osInterface);
         if (nullptr == vpPlatformInterface)
         {
             *eStatus = MOS_STATUS_NULL_POINTER;
