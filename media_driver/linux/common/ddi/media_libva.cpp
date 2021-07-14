@@ -81,6 +81,7 @@ VAProcFilterType vp_supported_filters[DDI_VP_MAX_NUM_FILTERS] = {
     VAProcFilterTotalColorCorrection,
     VAProcFilterHVSNoiseReduction,
     VAProcFilterHighDynamicRangeToneMapping
+    , VAProcFilter3DLUT
 };
 
 VAProcColorStandardType vp_input_color_std[DDI_VP_NUM_INPUT_COLOR_STD] = {
