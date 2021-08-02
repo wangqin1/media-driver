@@ -789,9 +789,15 @@ MOS_STATUS CodechalVdencHevcState::SetupMbQpStreamIn(PMOS_RESOURCE streamIn)
     MOS_ZeroMemory(&LockFlagsReadOnly, sizeof(MOS_LOCK_PARAMS));
     LockFlagsReadOnly.ReadOnly = true;
 
-    auto pInputData = (uint8_t*)m_osInterface->pfnLockResource(
+    auto pInputDataGfx = (uint8_t*)m_osInterface->pfnLockResource(
                                                             m_osInterface, &(m_encodeParams.psMbQpDataSurface->OsResource),
                                                             &LockFlagsReadOnly);
+    CODECHAL_ENCODE_CHK_NULL_RETURN(pInputDataGfx);
+    CODECHAL_ENCODE_CHK_STATUS_RETURN(m_osInterface->pfnGetResourceInfo(
+                                                            m_osInterface, &(m_encodeParams.psMbQpDataSurface->OsResource),
+                                                            &surfInfo));
+    auto pInputData = (int8_t*)MOS_AllocMemory(surfInfo.dwSize);
+    MOS_SecureMemcpy(pInputData, surfInfo.dwSize, pInputDataGfx, surfInfo.dwSize);
 
     MHW_VDBOX_VDENC_STREAMIN_STATE_PARAMS streaminDataParams;
 
@@ -851,6 +857,7 @@ MOS_STATUS CodechalVdencHevcState::SetupMbQpStreamIn(PMOS_RESOURCE streamIn)
 
     MOS_SecureMemcpy(dataGfx, uiSize, data, uiSize);
     MOS_SafeFreeMemory(data);
+    MOS_SafeFreeMemory(pInputData);
 
     m_osInterface->pfnUnlockResource(
                                     m_osInterface,
