@@ -291,4 +291,9 @@ void VPHAL_VEBOX_IECP_RENDERER::SetParams(
             pRenderData->GetVeboxStateParams()->pVphalVeboxIecpParams = pVphalVeboxIecpParams;
         }
     }
+    else
+    {
+        pVphalVeboxIecpParams->bFeCSCEnable                         = false;
+        pRenderData->GetVeboxStateParams()->pVphalVeboxIecpParams   = pVphalVeboxIecpParams;
+    }
 }

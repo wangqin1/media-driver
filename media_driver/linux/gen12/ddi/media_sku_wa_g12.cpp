@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018-2020, Intel Corporation
+* Copyright (c) 2018-2021, Intel Corporation
 *
 * Permission is hereby granted, free of charge, to any person obtaining a
 * copy of this software and associated documentation files (the "Software"),
@@ -262,6 +262,8 @@ static bool InitTglMediaSku(struct GfxDeviceInfo *devInfo,
     MEDIA_WR_SKU(skuTable, FtrLinearCCS, 1);
 
     MEDIA_WR_SKU(skuTable, FtrUseSwSwizzling, 1);
+
+    MEDIA_WR_SKU(skuTable, FtrScalingFirst, 1);
 
     return true;
 }
