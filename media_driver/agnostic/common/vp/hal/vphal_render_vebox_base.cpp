@@ -2476,7 +2476,8 @@ void VPHAL_VEBOX_STATE::VeboxSetRenderingFlags(
     // Need to refine later
     // Actually, behind CSC can do nothing which is related to degamma/gamma
     pRenderData->bBeCsc             = (IS_VPHAL_OUTPUT_PIPE_VEBOX(pRenderData) &&
-                                        pSrc->ColorSpace != pRenderTarget->ColorSpace);
+                                       pSrc->ColorSpace != pRenderTarget->ColorSpace &&
+                                       !pSrc->p3DLutParams);
 
     pRenderData->bProcamp           = ((IS_VPHAL_OUTPUT_PIPE_VEBOX(pRenderData) ||
                                         IS_VPHAL_OUTPUT_PIPE_SFC(pRenderData))  &&
@@ -3864,7 +3865,7 @@ bool VPHAL_VEBOX_STATE::VeboxIs2PassesCSCNeeded(
             (pRenderTarget->ColorSpace == CSpace_stRGB)           ||
             (pRenderTarget->ColorSpace == CSpace_sRGB))
         {
-            b2PassesCSCNeeded = (pRenderData->bHdr3DLut) ? false : true;
+            b2PassesCSCNeeded = (pRenderData->bHdr3DLut || pSrc->p3DLutParams) ? false : true;
         }
     }
 
