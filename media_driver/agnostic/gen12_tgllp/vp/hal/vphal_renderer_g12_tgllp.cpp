@@ -284,8 +284,6 @@ MOS_STATUS VphalRendererG12Tgllp::AllocateSurface(
 {
     MOS_STATUS eStatus                  = MOS_STATUS_SUCCESS;
     bool bAllocated                     = false;
-    uint32_t dwAlignedWidth             = 1280;
-    uint32_t dwAlignedHeight            = 720;
 
     VPHAL_RENDER_CHK_NULL(pcRenderParams);
     VPHAL_RENDER_CHK_NULL(pSurface);
@@ -298,9 +296,6 @@ MOS_STATUS VphalRendererG12Tgllp::AllocateSurface(
         eStatus = MOS_STATUS_INVALID_PARAMETER;
         goto finish;
     }
-
-    dwAlignedWidth      = MOS_ALIGN_CEIL(dwSurfaceWidth, VPHAL_BUFFER_SIZE_INCREMENT);
-    dwAlignedHeight     = MOS_ALIGN_CEIL(dwSurfaceHeight, VPHAL_BUFFER_SIZE_INCREMENT);
 
     eStatus = VpHal_ReAllocateSurface(
         m_pOsInterface,
@@ -364,6 +359,9 @@ MOS_STATUS VphalRendererG12Tgllp::RenderScaling(
     VPHAL_SURFACE               inputSurface            = {};
     PVPHAL_3DLUT_PARAMS         p3DLutParams            = nullptr;
     PVPHAL_SURFACE              pDSSurface              = nullptr;              // Always point to the down scaled surface
+    uint32_t                    dwHalfInWidth           = 1280;                 // Half of the processed input width
+    uint32_t                    dwHalfInHeight          = 720;                  // Half of the processed input height
+    RECT                        rectHalfInRegion        = {0, 0, 1280, 720};    // Half of the processed input region
 
     VPHAL_RENDER_CHK_NULL(pRenderParams);
     VPHAL_RENDER_CHK_NULL(pRenderParams->pSrc);
@@ -419,23 +417,28 @@ MOS_STATUS VphalRendererG12Tgllp::RenderScaling(
          }
     }
 
-    // First pass
+    // Calculate the size of processing region for 2 pass downscaling
+    dwHalfInWidth                   = (uint32_t)((0.5) * (float)(pSource->rcSrc.right - pSource->rcSrc.left));
+    dwHalfInHeight                  = (uint32_t)((0.5) * (float)(pSource->rcSrc.bottom- pSource->rcSrc.top));
+    dwHalfInWidth                   = MOS_ALIGN_CEIL(dwHalfInWidth, 4);
+    dwHalfInHeight                  = MOS_ALIGN_CEIL(dwHalfInHeight, 4);
+    rectHalfInRegion.top            = 0;
+    rectHalfInRegion.left           = 0;
+    rectHalfInRegion.right          = dwHalfInWidth;
+    rectHalfInRegion.bottom         = dwHalfInHeight;
+
     // Allocate intermediate surface for the first pass
-    p3DLutParams                    = pSource->p3DLutParams;
-    renderParams                    = *pRenderParams;
-    inputSurface                    = *pSource;
-    dwAllocatedWidth                = (uint32_t)((0.5) * (float)(pSource->rcSrc.right - pSource->rcSrc.left));
-    dwAllocatedHeight               = (uint32_t)((0.5) * (float)(pSource->rcSrc.bottom- pSource->rcSrc.top));
-    dwAllocatedWidth                = MOS_MAX(dwAllocatedWidth, (uint32_t)(pSource->rcDst.right - pSource->rcDst.left));
-    dwAllocatedHeight               = MOS_MAX(dwAllocatedHeight, (uint32_t)(pSource->rcDst.bottom - pSource->rcDst.top));
-    rectScalingRegion.top           = 0;
-    rectScalingRegion.bottom        = 0;
-    rectScalingRegion.right         = dwAllocatedWidth;
-    rectScalingRegion.bottom        = dwAllocatedHeight;
+    dwAllocatedWidth                = MOS_MAX(dwHalfInWidth, pTarget->dwWidth);
+    dwAllocatedHeight               = MOS_MAX(dwHalfInHeight, pTarget->dwHeight);
+
     VPHAL_RENDER_CHK_STATUS(AllocateSurface(pRenderParams, pSource, m_pDSSurface[0], dwAllocatedWidth, dwAllocatedHeight, pSource->Format));
     // First pass scaling
     {
         // Use inputSurface instead of the pointer of the original input to keep it unchanged.
+        rectScalingRegion               = (b2PassScaling) ? rectHalfInRegion : pSource->rcDst;
+        p3DLutParams                    = pSource->p3DLutParams;
+        renderParams                    = *pRenderParams;
+        inputSurface                    = *pSource;
         inputSurface.p3DLutParams       = nullptr;
         inputSurface.rcDst              = rectScalingRegion;
         m_pDSSurface[0]->rcSrc          = rectScalingRegion;
@@ -445,7 +448,7 @@ MOS_STATUS VphalRendererG12Tgllp::RenderScaling(
         renderParams.pTarget[0]         = m_pDSSurface[0];
         VPHAL_RENDER_CHK_STATUS(RenderPass(&renderParams));
         m_pDSSurface[0]->rcSrc          = m_pDSSurface[0]->rcDst;
-        m_pDSSurface[0]->rcMaxSrc       = m_pDSSurface[0]->rcSrc;
+        m_pDSSurface[0]->rcMaxSrc       = m_pDSSurface[0]->rcDst;
         m_pDSSurface[0]->rcDst          = pTarget->rcDst;
         pDSSurface                      = m_pDSSurface[0];
     }
@@ -453,13 +456,10 @@ MOS_STATUS VphalRendererG12Tgllp::RenderScaling(
     // Second pass scaling
     if (b2PassScaling)
     {
-        dwAllocatedWidth                = (uint32_t)(pSource->rcDst.right - pSource->rcDst.left);
-        dwAllocatedHeight               = (uint32_t)(pSource->rcDst.bottom- pSource->rcDst.top);
+        dwAllocatedWidth                = pTarget->dwWidth;
+        dwAllocatedHeight               = pTarget->dwHeight;
         VPHAL_RENDER_CHK_STATUS(AllocateSurface(pRenderParams, pSource, m_pDSSurface[1], dwAllocatedWidth, dwAllocatedHeight, pSource->Format));
-        rectScalingRegion.top           = 0;
-        rectScalingRegion.bottom        = 0;
-        rectScalingRegion.right         = dwAllocatedWidth;
-        rectScalingRegion.bottom        = dwAllocatedHeight;
+        rectScalingRegion               = pTarget->rcDst;
         m_pDSSurface[0]->rcDst          = rectScalingRegion;
         m_pDSSurface[1]->rcDst          = rectScalingRegion;
         inputSurface                    = *m_pDSSurface[0];
