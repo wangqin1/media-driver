@@ -4898,6 +4898,25 @@ MOS_STATUS CodechalVdencHevcStateG12::SetDmemHuCBrcUpdate()
         hucVdencBrcUpdateDmem->ReEncodeNegativeQPDeltaThr_S8 = 0;
     }
 
+    // Skipped frame handling
+    if (m_numSkipFrames)
+    {
+        // CP case: one or more frames with skip flag = 2 received and copied
+        hucVdencBrcUpdateDmem->SkipFrameSize = (uint16_t)m_sizeSkipFrames;
+        hucVdencBrcUpdateDmem->NumFrameSkipped = (uint16_t)m_numSkipFrames;
+    }
+    else if (FRAME_SKIP_NORMAL == m_skipFrameFlag)
+    {
+        // non-CP case: use the num/size of skipped frames passed in by MSDK
+        hucVdencBrcUpdateDmem->SkipFrameSize = (uint16_t)m_hevcPicParams->SizeSkipFrames;
+        hucVdencBrcUpdateDmem->NumFrameSkipped = (uint16_t)m_hevcPicParams->NumSkipFrames;
+    }
+    else
+    {
+        hucVdencBrcUpdateDmem->SkipFrameSize = 0;
+        hucVdencBrcUpdateDmem->NumFrameSkipped= 0;
+    }
+
     // reset skip frame statistics
     m_numSkipFrames = 0;
     m_sizeSkipFrames = 0;

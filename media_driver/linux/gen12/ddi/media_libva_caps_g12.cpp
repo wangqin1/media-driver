@@ -1716,21 +1716,7 @@ VAStatus MediaLibvaCapsG12::CreateEncAttributes(
     (*attribList)[attrib.type] = attrib.value;
 
     attrib.type = VAConfigAttribEncSkipFrame;
-    if (entrypoint == VAEntrypointEncSliceLP)
-    {
-        if (IsAvcProfile(profile))
-        {
-            attrib.value = 1;
-        }
-        else
-        {
-            attrib.value = 0;
-        }
-    }
-    else
-    {
-        attrib.value = 1;
-    }
+    attrib.value = 1;
     (*attribList)[attrib.type] = attrib.value;
 
     attrib.type = VAConfigAttribEncryption;
