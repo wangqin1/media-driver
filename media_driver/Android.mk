@@ -722,7 +722,7 @@ LOCAL_SRC_FILES := \
     media_driver_next/agnostic/common/shared/statusreport/media_status_report.cpp \
     media_driver_next/agnostic/common/shared/mmc/media_mem_compression.cpp \
     media_driver_next/agnostic/common/shared/bufferMgr/media_allocator.cpp \
-    media_driver_next/agnostic/common/shared/mediacopy/media_blt.cpp \
+    media_driver_next/agnostic/common/shared/mediacopy/media_blt_copy.cpp \
     media_driver_next/agnostic/common/shared/mediacopy/media_copy.cpp \
     media_driver_next/agnostic/common/shared/mediacopy/media_vebox_copy.cpp \
     media_driver_next/agnostic/common/shared/media_sfc_interface/media_sfc_interface.cpp \
