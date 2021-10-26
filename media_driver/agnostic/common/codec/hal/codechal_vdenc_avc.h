@@ -1116,6 +1116,8 @@ MOS_STATUS CodechalVdencAvcState::SetDmemHuCBrcInitResetImpl(CODECHAL_VDENC_AVC_
     CODECHAL_ENCODE_FUNCTION_ENTER;
 
     auto avcSeqParams = m_avcSeqParam;
+    auto avcPicParams = m_avcPicParam;
+
     if (avcSeqParams->FrameSizeTolerance == EFRAMESIZETOL_EXTREMELY_LOW) // Low Delay Mode
     {
         avcSeqParams->MaxBitRate = avcSeqParams->TargetBitRate;
@@ -1179,7 +1181,15 @@ MOS_STATUS CodechalVdencAvcState::SetDmemHuCBrcInitResetImpl(CODECHAL_VDENC_AVC_
     CODECHAL_ENCODE_CHK_STATUS_RETURN(CodecHalAvcEncode_GetProfileLevelMaxFrameSize(
         avcSeqParams, this, &profileLevelMaxFrame));
 
-    hucVDEncBrcInitDmem->INIT_ProfileLevelMaxFrame_U32 = profileLevelMaxFrame;
+    if(avcPicParams->TargetFrameSize != 0)
+    {
+        hucVDEncBrcInitDmem->INIT_ProfileLevelMaxFrame_U32 = uint32_t(avcPicParams->TargetFrameSize * 1.5);
+    }
+    else
+    {
+        hucVDEncBrcInitDmem->INIT_ProfileLevelMaxFrame_U32 = profileLevelMaxFrame;
+    }
+
     if (avcSeqParams->GopRefDist && (avcSeqParams->GopPicSize > 0))
     {
         hucVDEncBrcInitDmem->INIT_GopP_U16 = (avcSeqParams->GopPicSize - 1) / avcSeqParams->GopRefDist;

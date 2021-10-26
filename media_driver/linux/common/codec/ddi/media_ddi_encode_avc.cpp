@@ -308,8 +308,8 @@ VAStatus DdiEncodeAvc::ParseMiscParamRC(void *data)
         (m_encodeCtx->uiRCMethod & (VA_RC_VBR | VA_RC_QVBR | VA_RC_VCM)))
     {
         picParams->TargetFrameSize = encMiscParamRC->target_frame_size;
-        // to force VC scenario for TCBRC
-        seqParams->bAutoMaxPBFrameSizeForSceneChange = encMiscParamRC->target_frame_size != 0;
+        // to force CG scenario for TCBRC
+        seqParams->bAutoMaxPBFrameSizeForSceneChange = 0;
     }
 #endif
 
