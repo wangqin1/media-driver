@@ -4281,7 +4281,14 @@ MOS_STATUS CodechalVdencHevcStateG12::SetDmemHuCBrcInitReset()
     MOS_ZeroMemory(hucVdencBrcInitDmem, sizeof(CODECHAL_VDENC_HEVC_HUC_BRC_INIT_DMEM_G12));
 
     hucVdencBrcInitDmem->BRCFunc_U32       = (m_enableTileReplay ? 1 : 0) << 7;  //bit0 0: Init; 1: Reset, bit7 0: frame-based; 1: tile-based
-    hucVdencBrcInitDmem->UserMaxFrame      = GetProfileLevelMaxFrameSize();
+    if(m_hevcPicParams->TargetFrameSize != 0)
+    {
+        hucVdencBrcInitDmem->UserMaxFrame  = uint32_t(m_hevcPicParams->TargetFrameSize * 1.5);
+    }
+    else
+    {
+        hucVdencBrcInitDmem->UserMaxFrame  = GetProfileLevelMaxFrameSize();
+    }
     hucVdencBrcInitDmem->InitBufFull_U32   = MOS_MIN(m_hevcSeqParams->InitVBVBufferFullnessInBit, m_hevcSeqParams->VBVBufferSizeInBit);
     hucVdencBrcInitDmem->BufSize_U32       = m_hevcSeqParams->VBVBufferSizeInBit;
     hucVdencBrcInitDmem->TargetBitrate_U32 = m_hevcSeqParams->TargetBitRate * CODECHAL_ENCODE_BRC_KBPS;  // map DDI params(in Kbits) to huc (in bits)
@@ -4295,7 +4302,14 @@ MOS_STATUS CodechalVdencHevcStateG12::SetDmemHuCBrcInitReset()
         //Backup CodingType as need to set it as B_Tpye to get MaxFrameSize for P/B frames.
         auto CodingTypeTemp = m_hevcPicParams->CodingType;
         m_hevcPicParams->CodingType = B_TYPE;
-        hucVdencBrcInitDmem->ProfileLevelMaxFramePB_U32 = GetProfileLevelMaxFrameSize();
+        if(m_hevcPicParams->TargetFrameSize != 0)
+        {
+            hucVdencBrcInitDmem->ProfileLevelMaxFramePB_U32 = uint32_t(m_hevcPicParams->TargetFrameSize * 1.5);
+        }
+        else
+        {
+            hucVdencBrcInitDmem->ProfileLevelMaxFramePB_U32 = GetProfileLevelMaxFrameSize();
+        }
         m_hevcPicParams->CodingType = CodingTypeTemp;
     }
     else
