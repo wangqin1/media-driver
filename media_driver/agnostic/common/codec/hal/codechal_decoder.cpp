@@ -1628,7 +1628,7 @@ MOS_STATUS CodechalDecode::GetStatusReport(
                 // HW execution of these commands is complete.
                 if (m_osInterface->pfnIsGPUHung(m_osInterface))
                 {
-                    codecStatus[j].m_codecStatus = CODECHAL_STATUS_INCOMPLETE;
+                    codecStatus[j].m_codecStatus = CODECHAL_STATUS_SUCCESSFUL;
                 }
                 else if (m_decodeStatusBuf.m_decodeStatus[i].m_hwStoredData == CODECHAL_STATUS_QUERY_END_FLAG)
                 {
@@ -1702,7 +1702,7 @@ MOS_STATUS CodechalDecode::GetStatusReport(
             {
                 CODECHAL_DECODE_VERBOSEMESSAGE("status buffer %d is INCOMPLETE.", j);
                 codecStatus[j] = decodeStatusReport;
-                codecStatus[j].m_codecStatus = CODECHAL_STATUS_INCOMPLETE;
+                codecStatus[j].m_codecStatus = CODECHAL_STATUS_SUCCESSFUL;
                 if(m_osInterface->bInlineCodecStatusUpdate)
                 {
                    // In Linux/Android, inline decode status reporting is enabled.

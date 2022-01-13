@@ -3928,6 +3928,29 @@ mos_set_context_param_sseu(struct mos_linux_context *ctx,
 }
 
 int
+mos_set_context_unbanned(struct mos_linux_context *ctx)
+{
+    struct mos_bufmgr_gem *bufmgr_gem;
+    struct drm_i915_gem_context_param context_param;
+    int ret;
+
+    if (ctx == nullptr)
+        return -EINVAL;
+
+    bufmgr_gem = (struct mos_bufmgr_gem *)ctx->bufmgr;
+    memset(&context_param, 0, sizeof(context_param));
+    context_param.ctx_id = ctx->ctx_id;
+    context_param.param = I915_CONTEXT_PARAM_BANNABLE;
+    context_param.value = false;
+
+    ret = drmIoctl(bufmgr_gem->fd,
+               DRM_IOCTL_I915_GEM_CONTEXT_SETPARAM,
+               &context_param);
+
+    return ret;
+}
+
+int
 mos_get_subslice_mask(int fd, unsigned int *subslice_mask)
 {
     drm_i915_getparam_t gp;

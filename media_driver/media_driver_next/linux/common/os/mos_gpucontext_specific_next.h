@@ -187,6 +187,8 @@ public:
     //!
     MOS_STATUS AllocateGPUStatusBuf();
 
+    int32_t IsGPUHung();
+
 #if MOS_COMMAND_RESINFO_DUMP_SUPPORTED
     void                PushCmdResPtr(const void *p) { m_cmdResPtrs.push_back(p); }
     void                ClearCmdResPtrs() { m_cmdResPtrs.clear(); }
@@ -287,6 +289,11 @@ private:
     MOS_LINUX_CONTEXT*  m_i915Context[MAX_ENGINE_INSTANCE_NUM+1];
     uint32_t     m_i915ExecFlag = 0;
     int32_t      m_currCtxPriority = 0;
+
+    // GPU Reset Statistics
+    uint32_t gpuResetCount[MAX_ENGINE_INSTANCE_NUM+1]      = {0};
+    uint32_t gpuActiveBatch[MAX_ENGINE_INSTANCE_NUM+1]     = {0};
+    uint32_t gpuPendingBatch[MAX_ENGINE_INSTANCE_NUM+1]    = {0};
 
 #if MOS_COMMAND_RESINFO_DUMP_SUPPORTED
     std::vector<const void *> m_cmdResPtrs; //!< Command OS resource pointers registered by pfnRegisterResource

@@ -140,6 +140,8 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
 
     if (streamState->ctxBasedScheduling)
     {
+        uint32_t resetCount = 0;
+        int32_t  ret = 0;
         unsigned int nengine = 0;
         struct i915_engine_class_instance *engine_map = nullptr;
 
@@ -151,6 +153,27 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
             MOS_OS_ASSERTMESSAGE("Failed to create context.\n");
             return MOS_STATUS_UNKNOWN;
         }
+
+        ret = mos_get_reset_stats(m_i915Context[0], &resetCount, nullptr, nullptr);
+        if (ret)
+        {
+            MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+            resetCount = 0;
+        }
+
+        gpuResetCount[0]    = resetCount;
+        gpuActiveBatch[0]   = 0;
+        gpuPendingBatch[0]  = 0;
+
+        if (streamState->component == COMPONENT_Decode)
+        {
+            if (mos_set_context_unbanned(m_i915Context[0]))
+            {
+                MOS_OS_ASSERTMESSAGE("Failed to set master context unbanned.\n");
+                return MOS_STATUS_UNKNOWN;
+            }
+        }
+
         m_i915Context[0]->pOsContext = osParameters;
 
         m_i915ExecFlag = I915_EXEC_DEFAULT;
@@ -263,6 +286,18 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
                     MOS_SafeFreeMemory(engine_map);
                     return MOS_STATUS_UNKNOWN;
                 }
+
+                ret = mos_get_reset_stats(m_i915Context[1], &resetCount, nullptr, nullptr);
+                if (ret)
+                {
+                    MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+                    resetCount = 0;
+                }
+
+                gpuResetCount[1]    = resetCount;
+                gpuActiveBatch[1]   = 0;
+                gpuPendingBatch[1]  = 0;
+
                 m_i915Context[1]->pOsContext = osParameters;
 
                 if (mos_set_context_param_load_balance(m_i915Context[1], engine_map, 1))
@@ -284,6 +319,18 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
                         MOS_SafeFreeMemory(engine_map);
                         return MOS_STATUS_UNKNOWN;
                     }
+
+                    ret = mos_get_reset_stats(m_i915Context[i+1], &resetCount, nullptr, nullptr);
+                    if (ret)
+                    {
+                        MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+                        resetCount = 0;
+                    }
+
+                    gpuResetCount[i+1]    = resetCount;
+                    gpuActiveBatch[i+1]   = 0;
+                    gpuPendingBatch[i+1]  = 0;
+
                     m_i915Context[i+1]->pOsContext = osParameters;
 
                     if (mos_set_context_param_bond(m_i915Context[i+1], engine_map[0], &engine_map[i], 1) != S_SUCCESS)
@@ -1468,4 +1515,46 @@ MOS_STATUS GpuContextSpecificNext::AllocateGPUStatusBuf()
     MOS_OS_CHK_STATUS_RETURN(eStatus);
 
     return MOS_STATUS_SUCCESS;
+}
+
+
+int32_t GpuContextSpecificNext::IsGPUHung()
+{
+    uint32_t     resetCount   = 0;
+    uint32_t     activeBatch  = 0;
+    uint32_t     pendingBatch = 0;
+    int32_t      result       = false;
+    int32_t      ret          = 0;
+
+    MOS_OS_FUNCTION_ENTER;
+
+    for (int i = 0; i <= MAX_ENGINE_INSTANCE_NUM; i++)
+    {
+        if (*(m_i915Context + i) != nullptr)
+        {
+            ret = mos_get_reset_stats(*(m_i915Context + i), &resetCount, &activeBatch, &pendingBatch);
+            if (ret)
+            {
+                MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+                return false;
+            }
+
+            if (resetCount      != gpuResetCount[i] ||
+                activeBatch     != gpuActiveBatch[i] ||
+                pendingBatch    != gpuPendingBatch[i])
+            {
+                gpuResetCount[i]    = resetCount;
+                gpuActiveBatch[i]   = activeBatch;
+                gpuPendingBatch[i]  = pendingBatch;
+                result                        = true;
+                break;
+            }
+            else
+            {
+                result = false;
+            }
+        }
+    }
+
+    return result;
 }

@@ -2693,28 +2693,37 @@ int32_t MosInterface::IsGPUHung(
         return false;
     }
 
-    osParameters = (PMOS_CONTEXT)streamState->perStreamParameters;
+    if (streamState->ctxBasedScheduling)
+    {
+        auto gpuContext = MosInterface::GetGpuContext(streamState, streamState->currentGpuContextHandle);
+        result = gpuContext->IsGPUHung();
+    }
+    else 
+    {
+        osParameters = (PMOS_CONTEXT)streamState->perStreamParameters;
 
-    ret = mos_get_reset_stats(osParameters->intel_context, &resetCount, &activeBatch, &pendingBatch);
-    if (ret)
-    {
-        MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
-        return false;
+        ret = mos_get_reset_stats(osParameters->intel_context, &resetCount, &activeBatch, &pendingBatch);
+        if (ret)
+        {
+            MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+            return false;
+        }
+
+        if (resetCount      != streamState->gpuResetCount ||
+            activeBatch     != streamState->gpuActiveBatch ||
+            pendingBatch    != streamState->gpuPendingBatch)
+        {
+            streamState->gpuResetCount    = resetCount;
+            streamState->gpuActiveBatch   = activeBatch;
+            streamState->gpuPendingBatch  = pendingBatch;
+            result                        = true;
+        }
+        else
+        {
+            result = false;
+        }
     }
 
-    if (resetCount      != streamState->gpuResetCount ||
-        activeBatch     != streamState->gpuActiveBatch ||
-        pendingBatch    != streamState->gpuPendingBatch)
-    {
-        streamState->gpuResetCount    = resetCount;
-        streamState->gpuActiveBatch   = activeBatch;
-        streamState->gpuPendingBatch  = pendingBatch;
-        result                        = true;
-    }
-    else
-    {
-        result = false;
-    }
     return result;
 }
 
