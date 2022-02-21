@@ -198,10 +198,6 @@ MOS_STATUS HalCm_AllocateTsResource(
         osInterface->pfnAllocateResource(osInterface,
                                          &allocParams,
                                          &state->renderTimeStampResource.osResource));
-    CM_CHK_MOSSTATUS_GOTOFINISH(
-        osInterface->pfnRegisterResource(osInterface,
-                                         &state->renderTimeStampResource.osResource,
-                                         true, true));
 
     osInterface->pfnSkipResourceSync(&state->renderTimeStampResource.osResource);
 
