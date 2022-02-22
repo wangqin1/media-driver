@@ -165,7 +165,7 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
         gpuActiveBatch[0]   = 0;
         gpuPendingBatch[0]  = 0;
 
-        if (streamState->component == COMPONENT_Decode)
+        if ((geteuid() == 0 ) && (streamState->component == COMPONENT_Decode))
         {
             if (mos_set_context_unbanned(m_i915Context[0]))
             {
