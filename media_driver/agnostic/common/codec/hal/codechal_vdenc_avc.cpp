@@ -3034,6 +3034,7 @@ CodechalVdencAvcState::CodechalVdencAvcState(
     m_userFeatureKeyReport = true;
 
     m_swBrcMode = nullptr;
+    m_reencode = 0;
 
     m_cmKernelEnable  = true;
     m_brcRoiSupported = true;
@@ -5121,6 +5122,7 @@ MOS_STATUS CodechalVdencAvcState::HuCBrcUpdate()
         CODECHAL_ENCODE_CHK_STATUS_RETURN(m_miInterface->AddMiBatchBufferEnd(&cmdBuffer, nullptr));
     }
 
+
     CODECHAL_DEBUG_TOOL(DumpHucBrcUpdate(true));
 
     m_osInterface->pfnReturnCommandBuffer(m_osInterface, &cmdBuffer, 0);
@@ -5760,7 +5762,7 @@ MOS_STATUS CodechalVdencAvcState::ExecutePictureLevel()
     }
 
     MHW_MI_CONDITIONAL_BATCH_BUFFER_END_PARAMS miConditionalBatchBufferEndParams;
-    if (m_vdencBrcEnabled)
+    if (m_vdencBrcEnabled && !m_swBrcMode)
     {
         // Insert conditional batch buffer end for HuC valid IMEM loaded check
         MOS_ZeroMemory(&miConditionalBatchBufferEndParams, sizeof(MHW_MI_CONDITIONAL_BATCH_BUFFER_END_PARAMS));
@@ -5774,6 +5776,27 @@ MOS_STATUS CodechalVdencAvcState::ExecutePictureLevel()
 
     if (m_currPass)
     {
+        if (m_swBrcMode && m_reencode)
+        {
+            PMOS_INTERFACE pOsInterface = m_debugInterface->m_osInterface;
+            MOS_LOCK_PARAMS LockFlagsReadOnly;
+            MOS_ZeroMemory(&LockFlagsReadOnly, sizeof(MOS_LOCK_PARAMS));
+            LockFlagsReadOnly.ReadOnly = 1;
+            uint32_t* pdwData = (uint32_t *)pOsInterface->pfnLockResource(pOsInterface, &m_resPakMmioBuffer, &LockFlagsReadOnly);
+
+            if (m_reencode & 0x80000000)
+            {
+                *pdwData |= 0x80000000;
+            }
+            if (m_reencode & 0x40000000)
+            {
+                *pdwData |= 0x40000000;
+            }
+            *pdwData |= (m_reencode & 0x10000000);
+            //printf("5834, m_reencode %d, *pdwData %0x*********\n", m_reencode, *pdwData);
+            pOsInterface->pfnUnlockResource(pOsInterface, &m_resPakMmioBuffer);
+            m_reencode = 0;
+        }
         if (m_inlineEncodeStatusUpdate && m_vdencBrcEnabled)
         {
             // inc dwStoreData conditionaly

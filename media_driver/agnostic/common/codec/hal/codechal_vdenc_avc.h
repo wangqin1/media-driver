@@ -626,7 +626,7 @@ public:
     //! \return   MOS_STATUS
     //!           MOS_STATUS_SUCCESS if success, else fail reason
     //!
-    MOS_STATUS HuCBrcInitReset();
+    virtual MOS_STATUS HuCBrcInitReset();
 
     //!
     //! \brief    VDENC BRC Update HuC FW Cmd.
@@ -634,7 +634,7 @@ public:
     //! \return   MOS_STATUS
     //!           MOS_STATUS_SUCCESS if success, else fail reason
     //!
-    MOS_STATUS HuCBrcUpdate();
+    virtual MOS_STATUS HuCBrcUpdate();
 
     //!
     //! \brief    VDENC Loads Cost According To CodingType & QP.
@@ -899,6 +899,10 @@ protected:
 
     virtual MOS_STATUS FillHucConstData(uint8_t *data);
 
+    //virtual MOS_STATUS AddVdencBrcImgBuffer(
+    //    PMOS_RESOURCE             vdencBrcImgBuffer,
+    //    PMHW_VDBOX_AVC_IMG_PARAMS params);
+
 protected:
     bool                                        m_vdencSinglePassEnable = false;   //!< Enable VDEnc single pass
 
@@ -932,6 +936,7 @@ protected:
     double   m_dBrcTargetSize;                //!< BRC target size.
     uint32_t m_trellis;                       //!< Trellis Number.
     bool     m_acceleratorHeaderPackingCaps;  //!< Flag set by driver from driver caps.
+    uint32_t m_reencode;                      //!< Flag for BRC DLL returned HuC status
 
     double   m_dBrcInitCurrentTargetBufFullInBits;  //!< BRC init current target buffer full in bits
     double   m_dBrcInitResetInputBitsPerFrame;      //!< BrcInitReset Input Bits Per Frame

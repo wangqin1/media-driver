@@ -173,6 +173,22 @@ class CodechalVdencAvcStateG12 : public CodechalVdencAvcState
     //!
     virtual MOS_STATUS UserFeatureKeyReport() override;
 
+    //!
+    //! \brief    VDENC BRC InitReset HuC FW Cmd.
+    //!
+    //! \return   MOS_STATUS
+    //!           MOS_STATUS_SUCCESS if success, else fail reason
+    //!
+    virtual MOS_STATUS HuCBrcInitReset() override;
+
+    //!
+    //! \brief    VDENC BRC Update HuC FW Cmd.
+    //!
+    //! \return   MOS_STATUS
+    //!           MOS_STATUS_SUCCESS if success, else fail reason
+    //!
+    virtual MOS_STATUS HuCBrcUpdate() override;
+
    protected:
     class SfdCurbe;
     bool                  m_vdencUltraModeEnable = false;   //!< Enable VDEnc ultra mode

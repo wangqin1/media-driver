@@ -3319,6 +3319,15 @@ MOS_STATUS CodechalEncoderState::UpdateEncodeStatus(
         }
         else
         {
+
+            //PMOS_INTERFACE pOsInterface = m_debugInterface->m_osInterface;
+            //MOS_LOCK_PARAMS LockFlagsReadOnly;
+            //MOS_ZeroMemory(&LockFlagsReadOnly, sizeof(MOS_LOCK_PARAMS));
+            //LockFlagsReadOnly.ReadOnly = 1;
+            //uint32_t* pdwData = (uint32_t *)pOsInterface->pfnLockResource(pOsInterface, &m_resPakMmioBuffer, &LockFlagsReadOnly);
+
+            //printf("3329, UpdateEncodeStatus *pdwData %0x*********\n", *pdwData);
+            //pOsInterface->pfnUnlockResource(pOsInterface, &m_resPakMmioBuffer);
             copyMemMemParams.presSrc     = &m_resPakMmioBuffer;
             copyMemMemParams.dwSrcOffset = (sizeof(uint32_t) * 1);
         }
@@ -3340,6 +3349,14 @@ MOS_STATUS CodechalEncoderState::UpdateEncodeStatus(
         }
         else
         {
+            //PMOS_INTERFACE pOsInterface = m_debugInterface->m_osInterface;
+            //MOS_LOCK_PARAMS LockFlagsReadOnly;
+            //MOS_ZeroMemory(&LockFlagsReadOnly, sizeof(MOS_LOCK_PARAMS));
+            //LockFlagsReadOnly.ReadOnly = 1;
+            //uint32_t* pdwData = (uint32_t *)pOsInterface->pfnLockResource(pOsInterface, &m_resPakMmioBuffer, &LockFlagsReadOnly);
+
+            //printf("3358, UpdateEncodeStatus *pdwData %0x*********\n", *pdwData);
+            //pOsInterface->pfnUnlockResource(pOsInterface, &m_resPakMmioBuffer);
             registerMemParams.presStoreBuffer = &m_resPakMmioBuffer;
             registerMemParams.dwOffset =  (sizeof(uint32_t) * 0);
         }

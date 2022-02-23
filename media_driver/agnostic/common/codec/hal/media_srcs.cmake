@@ -286,6 +286,7 @@ endif()
 if(${Common_Encode_Supported} STREQUAL "yes")
     set(TMP_3_SOURCES_
         ${CMAKE_CURRENT_LIST_DIR}/codechal_debug_encode_par.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/codechal_debug_encode_brc.c
         ${CMAKE_CURRENT_LIST_DIR}/codechal_encode_csc_ds.cpp
         ${CMAKE_CURRENT_LIST_DIR}/codechal_encode_sfc.cpp
         ${CMAKE_CURRENT_LIST_DIR}/codechal_kernel_base.cpp
@@ -303,6 +304,7 @@ if(${Common_Encode_Supported} STREQUAL "yes")
 
     set(TMP_3_HEADERS_
         ${CMAKE_CURRENT_LIST_DIR}/codechal_debug_encode_par.h
+        ${CMAKE_CURRENT_LIST_DIR}/codechal_debug_encode_brc.h
         ${CMAKE_CURRENT_LIST_DIR}/codechal_encode_csc_ds.h
         ${CMAKE_CURRENT_LIST_DIR}/codechal_encode_sfc.h
         ${CMAKE_CURRENT_LIST_DIR}/codechal_kernel_base.h

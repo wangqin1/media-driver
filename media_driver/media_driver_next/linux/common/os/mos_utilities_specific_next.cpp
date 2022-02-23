@@ -399,6 +399,11 @@ MOS_STATUS MosUtilities::MosLoadLibrary(const char * const lpLibFileName, PHMODU
     }
 
     *phModule = dlopen((const char *)lpLibFileName, RTLD_LAZY);
+    const char *dlErr1 = dlerror();
+    if (dlErr1)
+    {
+        printf("dlopen gets error %s !\n", dlErr1);
+    }
 
     return ((*phModule != nullptr) ? MOS_STATUS_SUCCESS : MOS_STATUS_LOAD_LIBRARY_FAILED);
 }
@@ -426,6 +431,11 @@ void  *MosUtilities::MosGetProcAddress(HMODULE hModule, const char *lpProcName)
     else
     {
         pSym = dlsym(hModule, lpProcName);
+        const char *dlErr1 = dlerror();
+        if (dlErr1)
+        {
+            printf("dlsym gets error %s !\n", dlErr1);
+        }
     }
 
     return pSym;
