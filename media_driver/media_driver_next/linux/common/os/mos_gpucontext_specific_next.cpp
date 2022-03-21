@@ -161,9 +161,9 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
             resetCount = 0;
         }
 
-        gpuResetCount[0]    = resetCount;
-        gpuActiveBatch[0]   = 0;
-        gpuPendingBatch[0]  = 0;
+        gpuResetCount    = resetCount;
+        gpuActiveBatch   = 0;
+        gpuPendingBatch  = 0;
 
         if ((geteuid() == 0 ) && (streamState->component == COMPONENT_Decode))
         {
@@ -286,18 +286,6 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
                     MOS_SafeFreeMemory(engine_map);
                     return MOS_STATUS_UNKNOWN;
                 }
-
-                ret = mos_get_reset_stats(m_i915Context[1], &resetCount, nullptr, nullptr);
-                if (ret)
-                {
-                    MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
-                    resetCount = 0;
-                }
-
-                gpuResetCount[1]    = resetCount;
-                gpuActiveBatch[1]   = 0;
-                gpuPendingBatch[1]  = 0;
-
                 m_i915Context[1]->pOsContext = osParameters;
 
                 if (mos_set_context_param_load_balance(m_i915Context[1], engine_map, 1))
@@ -319,18 +307,6 @@ MOS_STATUS GpuContextSpecificNext::Init(OsContextNext *osContext,
                         MOS_SafeFreeMemory(engine_map);
                         return MOS_STATUS_UNKNOWN;
                     }
-
-                    ret = mos_get_reset_stats(m_i915Context[i+1], &resetCount, nullptr, nullptr);
-                    if (ret)
-                    {
-                        MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
-                        resetCount = 0;
-                    }
-
-                    gpuResetCount[i+1]    = resetCount;
-                    gpuActiveBatch[i+1]   = 0;
-                    gpuPendingBatch[i+1]  = 0;
-
                     m_i915Context[i+1]->pOsContext = osParameters;
 
                     if (mos_set_context_param_bond(m_i915Context[i+1], engine_map[0], &engine_map[i], 1) != S_SUCCESS)
@@ -1528,31 +1504,27 @@ int32_t GpuContextSpecificNext::IsGPUHung()
 
     MOS_OS_FUNCTION_ENTER;
 
-    for (int i = 0; i <= MAX_ENGINE_INSTANCE_NUM; i++)
+    if (m_i915Context[0] != nullptr)
     {
-        if (*(m_i915Context + i) != nullptr)
+        ret = mos_get_reset_stats(m_i915Context[0], &resetCount, &activeBatch, &pendingBatch);
+        if (ret)
         {
-            ret = mos_get_reset_stats(*(m_i915Context + i), &resetCount, &activeBatch, &pendingBatch);
-            if (ret)
-            {
-                MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
-                return false;
-            }
+            MOS_OS_NORMALMESSAGE("mos_get_reset_stats return error(%d)\n", ret);
+            return false;
+        }
 
-            if (resetCount      != gpuResetCount[i] ||
-                activeBatch     != gpuActiveBatch[i] ||
-                pendingBatch    != gpuPendingBatch[i])
-            {
-                gpuResetCount[i]    = resetCount;
-                gpuActiveBatch[i]   = activeBatch;
-                gpuPendingBatch[i]  = pendingBatch;
-                result                        = true;
-                break;
-            }
-            else
-            {
-                result = false;
-            }
+        if (resetCount      != gpuResetCount ||
+            activeBatch     != gpuActiveBatch ||
+            pendingBatch    != gpuPendingBatch)
+        {
+            gpuResetCount    = resetCount;
+            gpuActiveBatch   = activeBatch;
+            gpuPendingBatch  = pendingBatch;
+            result           = true;
+        }
+        else
+        {
+            result           = false;
         }
     }
 
