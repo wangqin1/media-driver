@@ -2152,6 +2152,7 @@ public:
     bool                        m_enableTileReplay = false;                        //!< TileReplay Enable
     uint8_t m_tileRowPass = 0;                                                     //!< Current tile row pass
 
+    uint32_t m_reencode = 0;                                                       //!< indicator for re-pak according to BRC
     struct CODECHAL_HEVC_VIRTUAL_ENGINE_OVERRIDE
     {
         union {
