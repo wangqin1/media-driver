@@ -5776,6 +5776,7 @@ MOS_STATUS CodechalVdencAvcState::ExecutePictureLevel()
 
     if (m_currPass)
     {
+#if (_DEBUG || _RELEASE_INTERNAL)
         if (m_swBrcMode && m_reencode)
         {
             PMOS_INTERFACE pOsInterface = m_debugInterface->m_osInterface;
@@ -5797,6 +5798,7 @@ MOS_STATUS CodechalVdencAvcState::ExecutePictureLevel()
             pOsInterface->pfnUnlockResource(pOsInterface, &m_resPakMmioBuffer);
             m_reencode = 0;
         }
+#endif
         if (m_inlineEncodeStatusUpdate && m_vdencBrcEnabled)
         {
             // inc dwStoreData conditionaly

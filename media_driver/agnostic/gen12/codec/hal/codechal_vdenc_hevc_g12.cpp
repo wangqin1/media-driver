@@ -2677,7 +2677,7 @@ MOS_STATUS CodechalVdencHevcStateG12::ExecutePictureLevel()
         MOS_ZeroMemory(
             &miConditionalBatchBufferEndParams,
             sizeof(MHW_MI_CONDITIONAL_BATCH_BUFFER_END_PARAMS));
-
+#if (_DEBUG || _RELEASE_INTERNAL)
         if (m_swBrcMode && m_reencode)
         { 
             PMOS_INTERFACE pOsInterface = m_debugInterface->m_osInterface;
@@ -2689,6 +2689,7 @@ MOS_STATUS CodechalVdencHevcStateG12::ExecutePictureLevel()
             pOsInterface->pfnUnlockResource(pOsInterface, &m_resPakMmioBuffer);
             m_reencode = 0;
         }
+#endif
         // VDENC uses HuC FW generated semaphore for conditional 2nd pass
         miConditionalBatchBufferEndParams.presSemaphoreBuffer =
             &m_resPakMmioBuffer;
