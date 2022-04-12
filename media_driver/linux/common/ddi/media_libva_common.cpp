@@ -237,12 +237,7 @@ PDDI_MEDIA_SURFACE DdiMedia_ReplaceSurfaceWithVariant(PDDI_MEDIA_SURFACE surface
     {
         return nullptr;
     }
-    PDDI_MEDIA_SURFACE_HEAP_ELEMENT  surfaceElement = (PDDI_MEDIA_SURFACE_HEAP_ELEMENT)surface->pMediaCtx->pSurfaceHeap->pHeapBase;
-    if (nullptr == surfaceElement)
-    {
-        return nullptr;
-    }
-    surfaceElement += vaID;
+
     aligned_format = surface->format;
     switch (surface->format)
     {
@@ -293,14 +288,26 @@ PDDI_MEDIA_SURFACE DdiMedia_ReplaceSurfaceWithVariant(PDDI_MEDIA_SURFACE surface
     dstSurface->format = aligned_format;
     dstSurface->iWidth = aligned_width;
     dstSurface->iHeight = aligned_height;
-   //CreateNewSurface
+    //CreateNewSurface
     if(DdiMediaUtil_CreateSurface(dstSurface,mediaCtx) != VA_STATUS_SUCCESS)
     {
         MOS_FreeMemory(dstSurface);
         return surface;
     }
+
+    DdiMediaUtil_LockMutex(&mediaCtx->SurfaceMutex);
+    PDDI_MEDIA_SURFACE_HEAP_ELEMENT surfaceElement = (PDDI_MEDIA_SURFACE_HEAP_ELEMENT)surface->pMediaCtx->pSurfaceHeap->pHeapBase;
+    if (nullptr == surfaceElement)
+    {
+        DdiMediaUtil_UnLockMutex(&mediaCtx->SurfaceMutex);
+        DdiMediaUtil_FreeSurface(dstSurface);
+        MOS_FreeMemory(dstSurface);
+        return nullptr;
+    }
+    surfaceElement += vaID;
     //replace the surface
     surfaceElement->pSurface = dstSurface;
+    DdiMediaUtil_UnLockMutex(&mediaCtx->SurfaceMutex);
     //FreeSurface
     DdiMediaUtil_FreeSurface(surface);
     MOS_FreeMemory(surface);
