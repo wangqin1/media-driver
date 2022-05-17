@@ -265,6 +265,8 @@ static bool InitTglMediaSku(struct GfxDeviceInfo *devInfo,
 
     MEDIA_WR_SKU(skuTable, FtrScalingFirst, 1);
 
+    MEDIA_WR_SKU(skuTable, FtrHDR, 1);
+
     return true;
 }
 
