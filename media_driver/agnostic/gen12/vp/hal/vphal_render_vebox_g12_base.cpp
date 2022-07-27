@@ -2413,7 +2413,8 @@ VPHAL_OUTPUT_PIPE_MODE VPHAL_VEBOX_STATE_G12_BASE::GetOutputPipe(
 
         // Check if Vebox can be the output pipe again
         bOutputPipeVeboxFeasible = IS_OUTPUT_PIPE_VEBOX_FEASIBLE(pVeboxState, pcRenderParams, pSrcSurface);
-        if (bOutputPipeVeboxFeasible)
+        // Fast color fill in VEBOX can not enabled if 3DLUT (Random issues)
+        if (bOutputPipeVeboxFeasible && !pSrcSurface->p3DLutParams)
         {
             OutputPipe              = VPHAL_OUTPUT_PIPE_MODE_VEBOX;
             pTarget->bFastColorFill = true;
