@@ -32,6 +32,7 @@
 #include "mhw_mi.h"
 #include "mhw_cp_interface.h"
 #include "mos_os.h"
+#include "media_copy.h"
 
 #define BLT_CHK_STATUS(_stmt)               MOS_CHK_STATUS(MOS_COMPONENT_BLT, MOS_BLT_SUBCOMP_SELF, _stmt)
 #define BLT_CHK_STATUS_RETURN(_stmt)        MOS_CHK_STATUS_RETURN(MOS_COMPONENT_BLT, MOS_BLT_SUBCOMP_SELF, _stmt)
@@ -110,31 +111,17 @@ public:
     //!           [in] Pointer to input surface
     //! \param    outputSurface
     //!           [in] Pointer to output surface
+    //! \param    plane index
+    //!           [in] plan index, e.g Y plane index 0, UV plane index 1.
     //! \return   MOS_STATUS
     //!           Return MOS_STATUS_SUCCESS if successful, otherwise failed
     //!
-   virtual MOS_STATUS SetupBltCopyParam(
-        PMHW_FAST_COPY_BLT_PARAM mhwParams,
-        PMOS_RESOURCE            inputSurface,
-        PMOS_RESOURCE            outputSurface);
+    virtual MOS_STATUS SetupBltCopyParam(
+      PMHW_FAST_COPY_BLT_PARAM mhwParams,
+      PMOS_RESOURCE            inputSurface,
+      PMOS_RESOURCE            outputSurface,
+      int                      planeIndex);
 
-
-    //!
-    //! \brief    Setup fast copy parameters
-    //! \details  Setup fast copy parameters for BLT Engine
-    //! \param    mhwParams
-    //!           [in/out] Pointer to MHW_FAST_COPY_BLT_PARAM
-    //! \param    inputSurface
-    //!           [in] Pointer to input surface
-    //! \param    outputSurface
-    //!           [in] Pointer to output surface
-    //! \return   MOS_STATUS
-    //!           Return MOS_STATUS_SUCCESS if successful, otherwise failed
-    //!
-   virtual MOS_STATUS SetupFastCopyBltParam(
-        PMHW_FAST_COPY_BLT_PARAM mhwParams,
-        PMOS_RESOURCE            inputSurface,
-        PMOS_RESOURCE            outputSurface);
 
     //!
     //! \brief    Submit command
@@ -149,18 +136,49 @@ public:
 
 
     //!
-    //! \brief    Get color depth.
+    //! \brief    Get Block copy color depth.
     //! \details  get different format's color depth.
     //! \param    surface 
     //!           [in] input or output surface.
     //! \return   MOS_STATUS
     //!           Return MOS_STATUS_SUCCESS if successful, otherwise failed
     //!
-    uint32_t GetColorDepth(
+    uint32_t GetBlkCopyColorDepth(
         GMM_RESOURCE_FORMAT dstFormat,
         uint32_t            BytesPerTexel);
+        //!
+    //! \brief    Get Fast copy color depth.
+    //! \details  get different format's color depth.
+    //! \param    surface
+    //!           [in] input or output surface.
+    //! \return   MOS_STATUS
+    //!           Return MOS_STATUS_SUCCESS if successful, otherwise failed
+    //!
+    uint32_t GetFastCopyColorDepth(
+        GMM_RESOURCE_FORMAT dstFormat,
+        uint32_t            BytesPerTexel);
+    //!
+    //! \brief    Get plane's byte per texel
+    //! \details  Get plane's byte per texel
+    //! \param    MOS_FORMAT format
+    //!           [in] GMM resource format
+    //! \return   int
+    //!           return the scaling ratio;
+    //!
+    int GetBytesPerTexelScaling(MOS_FORMAT format);
+
+    //!
+    //! \brief    Get plane number
+    //! \details  Get plane number
+    //! \param    MOS_FORMAT format
+    //!           [in] GMM resource format
+    //! \return   int
+    //!           return the plane number
+    //!
+    int GetPlaneNum(MOS_FORMAT format);
 
 public:
+    bool           m_blokCopyon       = false;
     PMOS_INTERFACE m_osInterface      = nullptr;
     MhwInterfaces *m_mhwInterfaces    = nullptr;
     MhwMiInterface *m_miInterface     = nullptr;
