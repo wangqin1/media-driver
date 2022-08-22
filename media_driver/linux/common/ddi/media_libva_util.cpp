@@ -565,7 +565,7 @@ VAStatus DdiMediaUtil_AllocateSurface(
             hRes = VA_STATUS_ERROR_ALLOCATION_FAILED;
             goto finish;
         }
-
+        int gmmTiledType = gmmResourceInfo->GetTileType();
         if (bo)
         {
             mediaSurface->pGmmResourceInfo = gmmResourceInfo;
@@ -580,8 +580,7 @@ VAStatus DdiMediaUtil_AllocateSurface(
             mediaSurface->TileType         = tileformat;
             mediaSurface->isTiled          = (tileformat != I915_TILING_NONE) ? 1 : 0;
             mediaSurface->pData            = (uint8_t*) bo->virt;
-            DDI_VERBOSEMESSAGE("Allocate external surface %7d bytes (%d x %d resource).", mediaSurface->pSurfDesc->uiSize, width, height);
-        }
+            DDI_VERBOSEMESSAGE("Allocate external surface %7d bytes (%d x %d resource). gmmTiledType %d", mediaSurface->pSurfDesc->uiSize, width, height, gmmTiledType);        }
         else
         {
             DDI_ASSERTMESSAGE("Fail to allocate external surface");
@@ -726,8 +725,7 @@ VAStatus DdiMediaUtil_AllocateSurface(
             mediaSurface->TileType    = tileformat;
             mediaSurface->isTiled     = (tileformat != I915_TILING_NONE) ? 1 : 0;
             mediaSurface->pData       = (uint8_t*) bo->virt;
-            DDI_VERBOSEMESSAGE("Alloc %7d bytes (%d x %d resource).",gmmSize, width, height);
-            uint32_t event[] = {bo->handle, format, width, height, pitch, bo->size, tileformat, cpTag};
+            DDI_VERBOSEMESSAGE("Alloc %7d bytes (%d x %d resource, gmmTiledType %d).",gmmSize, width, height, gmmResourceInfo->GetTileType());            uint32_t event[] = {bo->handle, format, width, height, pitch, bo->size, tileformat, cpTag};
             MOS_TraceEventExt(EVENT_VA_SURFACE, EVENT_TYPE_INFO, event, sizeof(event), &gmmResourceInfo->GetResFlags(), sizeof(GMM_RESOURCE_FLAG));
         }
         else

@@ -239,7 +239,7 @@ MOS_STATUS BltState::SetupBltCopyParam(
         pMhwBltParams->dwColorDepth = GetFastCopyColorDepth(outputSurface->pGmmResInfo->GetResourceFormat(), BytesPerTexel);
     }
 
-        if( 1 == planeNum )
+    if( 1 == planeNum )
     {// handle as whole memory
        pMhwBltParams->dwDstBottom = (uint32_t)outputSurface->pGmmResInfo->GetSizeMainSurface() / ResDetails.dwPitch;
        if (false == m_blokCopyon)
@@ -257,6 +257,13 @@ MOS_STATUS BltState::SetupBltCopyParam(
         if (1 == planeIndex || 2 == planeIndex)
         {
            pMhwBltParams->dwDstBottom = pMhwBltParams->dwDstBottom / bytePerTexelScaling;
+           if (ResDetails.Format == Format_I420 || ResDetails.Format == Format_YV12)
+           {
+               pMhwBltParams->dwDstPitch  = pMhwBltParams->dwDstPitch / 2;
+               pMhwBltParams->dwSrcPitch  = pMhwBltParams->dwSrcPitch / 2;
+               pMhwBltParams->dwDstRight  = pMhwBltParams->dwDstRight / 2;
+               pMhwBltParams->dwDstBottom = pMhwBltParams->dwDstBottom / 2;
+           }
         }
     }
     pMhwBltParams->pSrcOsResource = inputSurface;
