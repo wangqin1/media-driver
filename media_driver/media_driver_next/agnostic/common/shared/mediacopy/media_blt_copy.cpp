@@ -186,6 +186,7 @@ MOS_STATUS BltState::SetupBltCopyParam(
     BLT_CHK_NULL_RETURN(pMhwBltParams);
     BLT_CHK_NULL_RETURN(inputSurface);
     BLT_CHK_NULL_RETURN(outputSurface);
+    BLT_CHK_NULL_RETURN(outputSurface->pGmmResInfo);
 
     uint32_t BytesPerTexel = 1;
     MOS_SURFACE       ResDetails;
@@ -195,6 +196,7 @@ MOS_STATUS BltState::SetupBltCopyParam(
     BLT_CHK_STATUS_RETURN(m_osInterface->pfnGetResourceInfo(m_osInterface, inputSurface, &ResDetails));
 
     uint32_t inputHeight = ResDetails.dwHeight;
+    uint32_t inputWidth = ResDetails.dwWidth;
     uint32_t inputPitch  = ResDetails.dwPitch;
 
     if (inputSurface->TileType != MOS_TILE_LINEAR)
@@ -214,6 +216,7 @@ MOS_STATUS BltState::SetupBltCopyParam(
     BLT_CHK_STATUS_RETURN(m_osInterface->pfnGetResourceInfo(m_osInterface, outputSurface, &ResDetails));
 
     uint32_t outputHeight = ResDetails.dwHeight;
+    uint32_t outputWidth = ResDetails.dwWidth;
     uint32_t outputPitch  = ResDetails.dwPitch;
 
     if (outputSurface->TileType != MOS_TILE_LINEAR)
@@ -229,13 +232,16 @@ MOS_STATUS BltState::SetupBltCopyParam(
     pMhwBltParams->dwDstLeft   = ResDetails.RenderOffset.YUV.Y.XOffset;
 
     int planeNum = GetPlaneNum(ResDetails.Format);
-
-    pMhwBltParams->dwDstRight = ResDetails.dwWidth;
+    pMhwBltParams->dwDstRight = std::min(inputWidth, outputWidth);
 
     BLT_CHK_NULL_RETURN(outputSurface->pGmmResInfo);
     if (outputSurface->pGmmResInfo->GetResourceType() != RESOURCE_BUFFER)
     {
         BytesPerTexel = outputSurface->pGmmResInfo->GetBitsPerPixel() / 8;  // using Bytes.
+        if (ResDetails.Format == Format_P010 || ResDetails.Format == Format_P016)
+        {
+            BytesPerTexel = 2;
+        }
     }
 
     if (true == m_blokCopyon)
@@ -258,9 +264,8 @@ MOS_STATUS BltState::SetupBltCopyParam(
     }
     else
     {
-        BLT_CHK_NULL_RETURN(outputSurface->pGmmResInfo);
-        int bytePerTexelScaling = GetBytesPerTexelScaling(ResDetails.Format);
-        pMhwBltParams->dwDstBottom = ResDetails.dwHeight;
+        int bytePerTexelScaling    = GetBytesPerTexelScaling(ResDetails.Format);
+        pMhwBltParams->dwDstBottom = std::min(inputHeight, outputHeight);
 
         if (1 == planeIndex || 2 == planeIndex)
         {
@@ -296,7 +301,6 @@ MOS_STATUS BltState::SubmitCMD(
     MHW_FAST_COPY_BLT_PARAM      fastCopyBltParam;
     MOS_GPUCTX_CREATOPTIONS      createOption;
     int                          planeNum = 1;
-printf("BltState::SubmitCMD\n");
     // no gpucontext will be created if the gpu context has been created before.
     BLT_CHK_STATUS_RETURN(m_osInterface->pfnCreateGpuContext(
         m_osInterface,
@@ -487,7 +491,9 @@ uint32_t BltState::GetFastCopyColorDepth(
 
    switch (format)
    {
-       case Format_NV12:
+        case Format_NV12:
+        case Format_P010:
+        case Format_P016:
             dstBytesPerTexel = 2;
            break;
 
