@@ -157,11 +157,7 @@ MOS_STATUS BltState::CopyMainSurface(
 
     BLT_CHK_STATUS_RETURN(SubmitCMD(&bltStateParam));
 
-    // sync
-    MOS_LOCK_PARAMS flag;
-    flag.Value     = 0;
-    flag.WriteOnly = 1;
-    BLT_CHK_STATUS_RETURN(m_osInterface->pfnLockSyncRequest(m_osInterface, dst, &flag));
+
     MOS_TraceEventExt(EVENT_MEDIA_COPY, EVENT_TYPE_END, nullptr, 0, nullptr, 0);
     return MOS_STATUS_SUCCESS;
 
@@ -254,9 +250,17 @@ MOS_STATUS BltState::SubmitCMD(
     MOS_STATUS                   eStatus;
     MOS_COMMAND_BUFFER           cmdBuffer;
     MHW_FAST_COPY_BLT_PARAM      fastCopyBltParam;
+    MOS_GPUCTX_CREATOPTIONS createOption;
 printf("BltState::SubmitCMD\n");
+    // no gpucontext will be created if the gpu context has been created before.
+    BLT_CHK_STATUS_RETURN(m_osInterface->pfnCreateGpuContext(
+        m_osInterface,
+        MOS_GPU_CONTEXT_BLT,
+        MOS_GPU_NODE_BLT,
+        &createOption));
+        
     // Set GPU context
-    m_osInterface->pfnSetGpuContext(m_osInterface, MOS_GPU_CONTEXT_BLT);
+    BLT_CHK_STATUS_RETURN(m_osInterface->pfnSetGpuContext(m_osInterface, MOS_GPU_CONTEXT_BLT));
 
     // Initialize the command buffer struct
     MOS_ZeroMemory(&cmdBuffer, sizeof(MOS_COMMAND_BUFFER));
