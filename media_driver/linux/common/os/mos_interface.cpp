@@ -1205,6 +1205,9 @@ MOS_STATUS MosInterface::ConvertResourceFromDdi(
         case Media_Format_NV12:
             resource->Format = Format_NV12;
             break;
+        case Media_Format_I420:
+            resource->Format = Format_I420;
+            break;
         case Media_Format_NV21:
             resource->Format = Format_NV21;
             break;
