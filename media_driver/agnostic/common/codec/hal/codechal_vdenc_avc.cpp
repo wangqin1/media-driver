@@ -7802,6 +7802,11 @@ MOS_STATUS CodechalVdencAvcState::ExecuteMeKernel()
     return MOS_STATUS_SUCCESS;
 }
 
+bool CodechalVdencAvcState::IsMBBRCControlEnabled()
+{
+    return m_mbBrcEnabled || m_avcPicParam->bNativeROI;
+}
+
 #if USE_CODECHAL_DEBUG_TOOL
 MOS_STATUS CodechalVdencAvcState::DumpHucBrcInit()
 {

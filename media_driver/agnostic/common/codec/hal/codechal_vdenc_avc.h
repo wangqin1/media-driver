@@ -594,8 +594,7 @@ public:
     //! \return   bool
     //!           true if native ROI, otherwise false
     //!
-    bool ProcessRoiDeltaQp();
-
+    virtual bool ProcessRoiDeltaQp();
     //!
     //! \brief    Add store HUC_ERROR_STATUS register command in the command buffer
     //!
@@ -754,6 +753,8 @@ public:
     //!           MOS_STATUS_SUCCESS if success, else fail reason
     //!
     virtual MOS_STATUS ExecuteMeKernel();
+    
+    virtual bool IsMBBRCControlEnabled();
 
 protected:
     // AvcGeneraicState functions
@@ -1252,7 +1253,7 @@ MOS_STATUS CodechalVdencAvcState::SetDmemHuCBrcInitResetImpl(CODECHAL_VDENC_AVC_
     hucVDEncBrcInitDmem->INIT_InitQPIP = (uint8_t)initQP;
 
     // MBBRC control
-    if (m_mbBrcEnabled)
+    if (IsMBBRCControlEnabled())
     {
         hucVDEncBrcInitDmem->INIT_MbQpCtrl_U8 = 1;
         MOS_SecureMemcpy(hucVDEncBrcInitDmem->INIT_DistQPDelta_I8, 4 * sizeof(int8_t), (void*)BRC_INIT_DistQPDelta_I8, 4 * sizeof(int8_t));
