@@ -3981,6 +3981,7 @@ CodechalEncodeAvcEncG11::CodechalEncodeAvcEncG11(
 
     m_vdboxOneDefaultUsed = true;
 
+
     Mos_CheckVirtualEngineSupported(m_osInterface, false, true);
 
     CODECHAL_DEBUG_TOOL(
