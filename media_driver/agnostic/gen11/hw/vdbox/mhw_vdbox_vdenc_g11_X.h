@@ -1422,8 +1422,7 @@ public:
             cmd.DW31.BestdistortionQpAdjustmentForZone3 = 3;
         }
 
-        if (params->bVdencBRCEnabled && params->bVdencStreamInEnabled && (avcPicParams->NumDirtyROI ||
-            (avcPicParams->TargetFrameSize > 0 && !avcSeqParams->LookaheadDepth)))  // TCBRC (for AdaptiveRegionBoost)
+        if (params->bVdencBRCEnabled && avcPicParams->NumDirtyROI && params->bVdencStreamInEnabled)
         {
             cmd.DW34.RoiEnable = true;
         }
