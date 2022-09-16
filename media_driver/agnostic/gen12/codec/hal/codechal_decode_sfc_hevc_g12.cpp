@@ -221,10 +221,16 @@ MOS_STATUS CodechalHevcSfcStateG12::CheckAndInitialize(
             // Set the input region as the HCP output frame region
             m_inputFrameWidth                                = m_hevcPicParams->PicWidthInMinCbsY << (m_hevcPicParams->log2_min_luma_coding_block_size_minus3 + 3);
             m_inputFrameHeight                               = m_hevcPicParams->PicHeightInMinCbsY << (m_hevcPicParams->log2_min_luma_coding_block_size_minus3 + 3);
-            decProcessingParams->rcInputSurfaceRegion.X = 0;
-            decProcessingParams->rcInputSurfaceRegion.Y = 0;
-            decProcessingParams->rcInputSurfaceRegion.Width  = m_inputFrameWidth;
-            decProcessingParams->rcInputSurfaceRegion.Height = m_inputFrameHeight;
+
+            // Honor the region height from the setting of API instead of overriding.
+            if (decProcessingParams->rcInputSurfaceRegion.Width == 0)
+            {
+                decProcessingParams->rcInputSurfaceRegion.Width = m_inputFrameWidth;
+            }
+            if (decProcessingParams->rcInputSurfaceRegion.Height == 0)
+            {
+                decProcessingParams->rcInputSurfaceRegion.Height = m_inputFrameHeight;
+            }
 
             CODECHAL_HW_CHK_STATUS_RETURN(Initialize(decProcessingParams, MhwSfcInterfaceG12::SFC_PIPE_MODE_HCP));
 
