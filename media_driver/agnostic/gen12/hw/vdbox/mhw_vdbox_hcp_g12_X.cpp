@@ -3211,6 +3211,11 @@ MOS_STATUS MhwVdboxHcpInterfaceG12::AddHcpDecodeSliceStateCmd(
             cmd->DW2.NextslicestartctbyOrNextSliceStartLcuYEncoder = hevcSliceStateG12->u16NextTileCtbY;
         }
     }
+    else if (hevcSliceStateG12->dwSliceIndex == 0)
+    {
+        cmd->DW1.SlicestartctbxOrSliceStartLcuXEncoder = 0;
+        cmd->DW1.SlicestartctbyOrSliceStartLcuYEncoder = 0;
+    }
     else
     {
         cmd->DW1.SlicestartctbxOrSliceStartLcuXEncoder = hevcSliceParams->slice_segment_address % widthInCtb;
