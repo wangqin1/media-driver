@@ -2290,6 +2290,7 @@ MOS_STATUS CodechalEncodeHevcBase::InitializePicture(const EncoderParams& params
 
     // Mb Qp data
     m_mbQpDataEnabled = params.bMbQpDataEnabled;
+    m_mbDelaQpDataEnabled = params.bMbDeltaQpDataEnabled; 
     if (m_mbQpDataEnabled)
     {
         m_mbQpDataSurface = *(params.psMbQpDataSurface);

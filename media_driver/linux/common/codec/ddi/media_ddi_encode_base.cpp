@@ -874,6 +874,7 @@ VAStatus DdiEncodeBase::CreateBuffer(
     if ((type != VAEncSliceParameterBufferType) &&
         (type != VAEncQPBufferType) &&
         (type != VAEncMacroblockMapBufferType) &&
+        (type != VAEncDeltaQpPerBlockBufferType)&&
         (elementsNum > 1))
     {
         return VA_STATUS_ERROR_INVALID_PARAMETER;
@@ -1110,6 +1111,7 @@ VAStatus DdiEncodeBase::CreateBuffer(
         break;
     }
     case VAEncQPBufferType:
+    case VAEncDeltaQpPerBlockBufferType:
     {
         //The permb qp buffer of legacy encoder is a 2D buffer, because dynamic resolution change, we cant determine the buffer size with the resolution information in encoder context
         //so the size information should be from application, the width should be the size, the height is the elementsNum to define this 2D buffer,width should always 64 byte alignment.
@@ -1293,6 +1295,7 @@ VAStatus DdiEncodeBase::CreateBuffer(
         (VAStatsStatisticsBottomFieldBufferType != type) &&
         (VAStatsMVPredictorBufferType != type) &&
         (VAEncQPBufferType != type) &&
+        (VAEncDeltaQpPerBlockBufferType != type)&&
         (VAEncMacroblockDisableSkipMapBufferType != (int32_t)type) &&
         (VAProbabilityBufferType != (int32_t)type))
     {

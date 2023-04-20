@@ -4486,8 +4486,7 @@ MOS_STATUS CodechalVdencHevcStateG12::SetDmemHuCBrcInitReset()
     MOS_SecureMemcpy(hucVdencBrcInitDmem->EstRateThreshP0_U8, 7 * sizeof(uint8_t), (void*)m_estRateThreshP0, 7 * sizeof(uint8_t));
     MOS_SecureMemcpy(hucVdencBrcInitDmem->EstRateThreshB0_U8, 7 * sizeof(uint8_t), (void*)m_estRateThreshB0, 7 * sizeof(uint8_t));
     MOS_SecureMemcpy(hucVdencBrcInitDmem->EstRateThreshI0_U8, 7 * sizeof(uint8_t), (void*)m_estRateThreshI0, 7 * sizeof(uint8_t));
-
-    if (m_vdencStreamInEnabled && m_hevcPicParams->NumROI && !m_vdencNativeROIEnabled)
+    if (m_vdencStreamInEnabled && !m_vdencNativeROIEnabled&& (m_hevcPicParams->NumROI||m_mbDelaQpDataEnabled) )
     {
         hucVdencBrcInitDmem->StreamInROIEnable_U8 = 1;
         hucVdencBrcInitDmem->StreamInSurfaceEnable_U8 = 1;

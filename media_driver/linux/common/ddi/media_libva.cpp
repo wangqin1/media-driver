@@ -3247,6 +3247,7 @@ VAStatus DdiMedia_MapBufferInternal (
         case VAEncFEIMBControlBufferType:
         case VAEncFEIMVPredictorBufferType:
         case VAEncQPBufferType:
+        case VAEncDeltaQpPerBlockBufferType:
             if(buf->bo)
             {
                 *pbuf = DdiMediaUtil_LockBuffer(buf, flag);
@@ -3456,6 +3457,7 @@ VAStatus DdiMedia_UnmapBuffer (
         case VAEncFEIDistortionBufferType:
         case VAEncQPBufferType:
         case VADecodeStreamoutBufferType:
+        case VAEncDeltaQpPerBlockBufferType:
             if(buf->bo)
             {
                 DdiMediaUtil_UnlockBuffer(buf);
@@ -3620,6 +3622,7 @@ VAStatus DdiMedia_DestroyBuffer (
         case VAEncFEIMBControlBufferType:
         case VAEncFEIMVPredictorBufferType:
         case VAEncQPBufferType:
+        case VAEncDeltaQpPerBlockBufferType:
         case VADecodeStreamoutBufferType:
             DdiMediaUtil_FreeBuffer(buf);
             break;

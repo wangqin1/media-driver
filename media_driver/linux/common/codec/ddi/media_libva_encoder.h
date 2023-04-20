@@ -165,7 +165,8 @@ typedef struct _DDI_ENCODE_CONTEXT
     bool                              EnableSliceLevelRateCtrl;
     //Per-MB Qp control
     bool                              bMBQpEnable;
-
+    //Per-MB Delta Qp control
+    bool                              bMBDeltaQpEnable;
     DDI_CODEC_RENDER_TARGET_TABLE     RTtbl;
     DDI_CODEC_COM_BUFFER_MGR          BufMgr;
     PDDI_MEDIA_CONTEXT                pMediaCtx;

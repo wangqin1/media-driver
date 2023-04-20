@@ -521,7 +521,8 @@ VAStatus MediaLibvaCaps::CheckAttribList(
             else if((attrib[j].type == VAConfigAttribMaxPictureWidth)
                  || (attrib[j].type == VAConfigAttribMaxPictureHeight)
                  || (attrib[j].type == VAConfigAttribEncROI)
-                 || (attrib[j].type == VAConfigAttribEncDirtyRect))
+                 || (attrib[j].type == VAConfigAttribEncDirtyRect)
+                 || (attrib[j].type == VAConfigAttribEncPerBlockControl))
             {
                 if(attrib[j].value <= (*m_profileEntryTbl[idx].m_attributes)[attrib[j].type])
                 {
@@ -883,6 +884,26 @@ VAStatus MediaLibvaCaps::CreateEncAttributes(
     {
         GetPlatformSpecificAttrib(profile, entrypoint,
                 VAConfigAttribEncROI, &attrib.value);
+    }
+    (*attribList)[attrib.type] = attrib.value;
+
+    attrib.type = VAConfigAttribEncPerBlockControl;
+    if (entrypoint == VAEntrypointEncSliceLP)
+    {
+        VAConfigAttribValEncPerBlockControl pbc_attrib = {0};
+        if (IsHevcProfile(profile))
+        {
+            pbc_attrib.bits.delta_qp_support = 1;
+            pbc_attrib.bits.log2_delta_qp_block_size = 5;
+            pbc_attrib.bits.delta_qp_size_in_bytes = 1;
+            
+        }
+        attrib.value = pbc_attrib.value;
+    }
+    else
+    {
+        GetPlatformSpecificAttrib(profile, entrypoint,
+                VAConfigAttribEncPerBlockControl, &attrib.value);
     }
     (*attribList)[attrib.type] = attrib.value;
 

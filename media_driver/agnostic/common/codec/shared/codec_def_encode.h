@@ -84,6 +84,7 @@ struct EncoderParams
     uint32_t                        uiSlcStructCaps;            //!< [AVC] Slice capability information, formatted as CODEC_SLICE_STRUCTS
     bool                            bMADEnabled;                //!< MAD is enabled
     bool                            bMbQpDataEnabled;           //!< [AVC & MPEG2] Indicates that psMbQpDataSurface is present.
+    bool                            bMbDeltaQpDataEnabled;      //!< [HEVC] Indicates that psMbQpDataSurface which contains Mb Delta QP data is present.
     bool                            bMbDisableSkipMapEnabled;   //!< [AVC] Indicates that psMbDisableSkipMapSurface is present.
     bool                            bReportStatisticsEnabled;   //!< [HEVC] Indicates whether statistic reporting is enabled, disabled by default.
     bool                            bQualityImprovementEnable;  //!< [HEVC] Indicates whether quality improvement is enabled, disabled by default.

@@ -268,6 +268,11 @@ VAStatus DdiEncodeHevc::RenderPicture(VADriverContextP ctx, VAContextID context,
             DdiMedia_MediaBufferToMosResource(buf, &m_encodeCtx->resMBQpBuffer);
             m_encodeCtx->bMBQpEnable = true;
             break;
+        case VAEncDeltaQpPerBlockBufferType:
+            DdiMedia_MediaBufferToMosResource(buf, &m_encodeCtx->resMBQpBuffer);
+            m_encodeCtx->bMBQpEnable = true;
+            m_encodeCtx->bMBDeltaQpEnable = true;
+            break;
 
         default:
             DDI_ASSERTMESSAGE("not supported buffer type.");
@@ -337,6 +342,10 @@ VAStatus DdiEncodeHevc::EncodeInCodecHal(uint32_t numSlices)
 
         encodeParams.psMbQpDataSurface = &mbQpSurface;
         encodeParams.bMbQpDataEnabled  = true;
+        if(m_encodeCtx->bMBDeltaQpEnable)
+        {
+            encodeParams.bMbDeltaQpDataEnabled  = true;
+        }
     }
 
     PCODEC_HEVC_ENCODE_SEQUENCE_PARAMS hevcSeqParams = (PCODEC_HEVC_ENCODE_SEQUENCE_PARAMS)((uint8_t *)m_encodeCtx->pSeqParams);
@@ -427,7 +436,7 @@ VAStatus DdiEncodeHevc::ResetAtFrameLevel()
     m_encodeCtx->bHavePackedSliceHdr   = false;
     m_encodeCtx->bLastPackedHdrIsSlice = false;
     m_encodeCtx->bMBQpEnable           = false;
-
+    m_encodeCtx->bMBDeltaQpEnable      = false;
     return VA_STATUS_SUCCESS;
 }
 

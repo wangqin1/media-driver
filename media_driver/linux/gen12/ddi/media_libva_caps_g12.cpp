@@ -419,6 +419,27 @@ VAStatus MediaLibvaCapsG12::GetPlatformSpecificAttrib(VAProfile profile,
             }
             break;
         }
+        case VAConfigAttribEncPerBlockControl:
+        {
+            if (entrypoint == VAEntrypointEncSliceLP)
+            {
+                status = VA_STATUS_ERROR_INVALID_PARAMETER;
+            }
+            else if (IsHevcProfile(profile))
+            {
+                VAConfigAttribValEncPerBlockControl pbc_attrib = {0};
+                pbc_attrib.bits.delta_qp_support = 1;
+                pbc_attrib.bits.log2_delta_qp_block_size = 5;
+                pbc_attrib.bits.delta_qp_size_in_bytes = 1;
+                *value = pbc_attrib.value;
+            }
+            else
+            {
+                *value =0;
+                status = VA_STATUS_ERROR_INVALID_PARAMETER;
+            }
+            break;
+        }
         case VAConfigAttribCustomRoundingControl:
         {
             *value = 1;
@@ -1759,6 +1780,26 @@ VAStatus MediaLibvaCapsG12::CreateEncAttributes(
     {
         GetPlatformSpecificAttrib(profile, entrypoint,
                 VAConfigAttribEncROI, &attrib.value);
+    }
+    (*attribList)[attrib.type] = attrib.value;
+
+    attrib.type = VAConfigAttribEncPerBlockControl;
+    if (entrypoint == VAEntrypointEncSliceLP)
+    {
+        VAConfigAttribValEncPerBlockControl pbc_attrib = {0};
+        if (IsHevcProfile(profile))
+        {
+            pbc_attrib.bits.delta_qp_support = 1;
+            pbc_attrib.bits.log2_delta_qp_block_size = 5;//1+3:16X16,2+3:32X32
+            pbc_attrib.bits.delta_qp_size_in_bytes = 1;
+            
+        }
+        attrib.value = pbc_attrib.value;
+    }
+    else
+    {
+        GetPlatformSpecificAttrib(profile, entrypoint,
+                VAConfigAttribEncPerBlockControl, &attrib.value);
     }
     (*attribList)[attrib.type] = attrib.value;
 

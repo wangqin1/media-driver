@@ -519,14 +519,12 @@ MOS_STATUS CodechalVdencHevcState::SetupBRCROIStreamIn(PMOS_RESOURCE streamIn, P
             m_osInterface, &(m_encodeParams.psMbQpDataSurface->OsResource), &LockFlagsReadOnly);
         
         CODECHAL_ENCODE_CHK_NULL_RETURN(pInputDataGfx);
-        
+        deltaQpBufWidth=(deltaQpBufWidth+1)>>1<<1;
+        deltaQpBufHeight=(deltaQpBufHeight+1)>>1<<1;
         for (uint32_t curY = 0; curY < deltaQpBufHeight; curY++)
         {
-            for (uint32_t curX = 0; curX < deltaQpBufWidth; curX++)
-            {
-                uint32_t iMB = curY * deltaQpBufHeight + curX;
-                deltaQpData[iMB] = *(pInputDataGfx + m_encodeParams.psMbQpDataSurface->dwPitch * curY + curX);
-            }
+            uint32_t iMB = curY * (deltaQpBufWidth);
+            MOS_SecureMemcpy(deltaQpData+iMB, deltaQpBufWidth, (pInputDataGfx + m_encodeParams.psMbQpDataSurface->dwPitch * curY), deltaQpBufWidth);// try to use memcpy to replace assignment by iMB
         }
 
         m_osInterface->pfnUnlockResource(
@@ -1238,9 +1236,9 @@ MOS_STATUS CodechalVdencHevcState::SetRegionsHuCBrcUpdate(PMHW_VDBOX_HUC_VIRTUAL
     virtualAddrParams->regionParams[7].presRegion = &m_resLcuBaseAddressBuffer;  // Region 7  Slice Stat Streamout (Input)
     virtualAddrParams->regionParams[8].presRegion =
         (MOS_RESOURCE*)m_allocator->GetResource(m_standard, pakInfo);                        // Region 8 - PAK Information (Input)
-    virtualAddrParams->regionParams[9].presRegion = &m_resVdencStreamInBuffer[m_currRecycledBufIdx];          // Region 9 – Streamin Buffer for ROI (Input)
-    virtualAddrParams->regionParams[10].presRegion = &m_vdencDeltaQpBuffer[m_currRecycledBufIdx];                  // Region 10 – Delta QP Buffer for ROI (Input)
-    virtualAddrParams->regionParams[11].presRegion = &m_vdencOutputROIStreaminBuffer;        // Region 11 – Streamin Buffer for ROI (Output)
+    virtualAddrParams->regionParams[9].presRegion = &m_resVdencStreamInBuffer[m_currRecycledBufIdx];          // Region 9 ï¿½ Streamin Buffer for ROI (Input)
+    virtualAddrParams->regionParams[10].presRegion = &m_vdencDeltaQpBuffer[m_currRecycledBufIdx];                  // Region 10 ï¿½ Delta QP Buffer for ROI (Input)
+    virtualAddrParams->regionParams[11].presRegion = &m_vdencOutputROIStreaminBuffer;        // Region 11 ï¿½ Streamin Buffer for ROI (Output)
     virtualAddrParams->regionParams[11].isWritable = true;
 
     // region 15 always in clear

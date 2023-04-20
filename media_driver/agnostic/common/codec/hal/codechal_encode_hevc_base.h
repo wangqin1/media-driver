@@ -1502,6 +1502,7 @@ public:
 
     // Mb Qp Data
     bool            m_mbQpDataEnabled = false;      //!< Mb Qp Data Enable Flag.
+    bool            m_mbDelaQpDataEnabled=false;    //!< Mb DeltaQp Data Enable Flag.
     MOS_SURFACE     m_mbQpDataSurface;              //!< Pointer to MOS_SURFACE of Mb Qp data surface, provided by DDI.
 
 protected:
