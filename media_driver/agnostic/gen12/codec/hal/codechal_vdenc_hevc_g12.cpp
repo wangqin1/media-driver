@@ -5570,6 +5570,8 @@ MOS_STATUS CodechalVdencHevcStateG12::EncodeMeKernel(HmeLevel hmeLevel)
 
     CODECHAL_ENCODE_CHK_STATUS_RETURN(EndStatusReport(&cmdBuffer, encFunctionType));
 
+    CODECHAL_ENCODE_CHK_STATUS_RETURN(m_stateHeapInterface->pfnSubmitBlocks(m_stateHeapInterface,kernelState));//submit blocks
+
     if (!m_singleTaskPhaseSupported || m_lastTaskInPhase)
     {
         CODECHAL_ENCODE_CHK_STATUS_RETURN(m_stateHeapInterface->pfnUpdateGlobalCmdBufId(
