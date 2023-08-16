@@ -1171,6 +1171,9 @@ MOS_STATUS VpHal_RndrCommonSetBufferSurfaceForHwAccess(
     PRENDERHAL_SURFACE_STATE_ENTRY      pSurfaceEntry;
     MOS_STATUS                          eStatus;
 
+    VPHAL_RENDER_CHK_NULL(pRenderHal);
+    VPHAL_RENDER_CHK_NULL(pRenderHal->pOsInterface);
+
     // Initialize Variables
     eStatus                         = MOS_STATUS_SUCCESS;
     pOsInterface                    = pRenderHal->pOsInterface;
@@ -1192,6 +1195,12 @@ MOS_STATUS VpHal_RndrCommonSetBufferSurfaceForHwAccess(
     if (pSurfaceParams == nullptr)
     {
         MOS_ZeroMemory(&SurfaceParam, sizeof(SurfaceParam));
+
+        //set mem object control for cache
+        SurfaceParam.MemObjCtl = (pRenderHal->pOsInterface->pfnCachePolicyGetMemoryObject(
+            MOS_MP_RESOURCE_USAGE_DEFAULT,
+            pRenderHal->pOsInterface->pfnGetGmmClientContext(pRenderHal->pOsInterface))).DwordValue;
+
         pSurfaceParams = &SurfaceParam;
     }
 
@@ -1331,6 +1340,9 @@ MOS_STATUS VpHal_CommonSetBufferSurfaceForHwAccess(
     PRENDERHAL_SURFACE_STATE_ENTRY      pSurfaceEntry;
     MOS_STATUS                          eStatus;
 
+    VPHAL_RENDER_CHK_NULL(pRenderHal);
+    VPHAL_RENDER_CHK_NULL(pRenderHal->pOsInterface);
+
     // Initialize Variables
     eStatus                         = MOS_STATUS_SUCCESS;
     pOsInterface                    = pRenderHal->pOsInterface;
@@ -1347,6 +1359,12 @@ MOS_STATUS VpHal_CommonSetBufferSurfaceForHwAccess(
     if (pSurfaceParams == nullptr)
     {
         MOS_ZeroMemory(&SurfaceParam, sizeof(SurfaceParam));
+
+        //set mem object control for cache
+        SurfaceParam.MemObjCtl = (pRenderHal->pOsInterface->pfnCachePolicyGetMemoryObject(
+            MOS_MP_RESOURCE_USAGE_DEFAULT,
+            pRenderHal->pOsInterface->pfnGetGmmClientContext(pRenderHal->pOsInterface))).DwordValue;
+
         pSurfaceParams = &SurfaceParam;
     }
 

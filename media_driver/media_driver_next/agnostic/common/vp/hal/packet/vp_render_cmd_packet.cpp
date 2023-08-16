@@ -218,6 +218,11 @@ MOS_STATUS VpRenderCmdPacket::SetupSurfaceState()
                 renderSurfaceParams.bWidthInDword_UV = true;
             }
 
+            //set mem object control for cache
+            renderSurfaceParams.MemObjCtl = (m_renderHal->pOsInterface->pfnCachePolicyGetMemoryObject(
+                MOS_MP_RESOURCE_USAGE_DEFAULT,
+                m_renderHal->pOsInterface->pfnGetGmmClientContext(m_renderHal->pOsInterface))).DwordValue;
+
             VP_SURFACE* vpSurface = m_surfacesGroup.find(it)->second;
 
             VP_RENDER_CHK_NULL_RETURN(vpSurface);
@@ -273,6 +278,8 @@ VP_SURFACE* VpRenderCmdPacket::GetSurface(SurfaceType type)
 MOS_STATUS VpRenderCmdPacket::SetupMediaWalker()
 {
     VP_RENDER_CHK_NULL_RETURN(m_kernel);
+    VP_RENDER_CHK_NULL_RETURN(m_renderHal);
+    VP_RENDER_CHK_NULL_RETURN(m_renderHal->pOsInterface);
 
     VP_RENDER_CHK_STATUS_RETURN(m_kernel->GetWalkerSetting(m_renderData.walkerParam));
 

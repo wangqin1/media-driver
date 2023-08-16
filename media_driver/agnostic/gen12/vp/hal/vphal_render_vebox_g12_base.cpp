@@ -2750,6 +2750,10 @@ MOS_STATUS VPHAL_VEBOX_STATE_G12_BASE::SetupSurfaceStatesForDenoise()
     PVPHAL_VEBOX_STATE_G12_BASE    pVeboxState = this;
     PVPHAL_VEBOX_RENDER_DATA       pRenderData = GetLastExecRenderData();
 
+    VPHAL_RENDER_CHK_NULL(pVeboxState);
+    VPHAL_RENDER_CHK_NULL(pVeboxState->m_pRenderHal);
+    VPHAL_RENDER_CHK_NULL(pVeboxState->m_pOsInterface);
+
     eStatus      = MOS_STATUS_SUCCESS;
     pRenderHal   = pVeboxState->m_pRenderHal;
     pOsInterface = pVeboxState->m_pOsInterface;
@@ -2805,6 +2809,9 @@ MOS_STATUS VPHAL_VEBOX_STATE_G12_BASE::SetupSurfaceStatesForDenoise()
     SurfaceParams.bWidthInDword_UV = true;
     SurfaceParams.Boundary         = RENDERHAL_SS_BOUNDARY_ORIGINAL;
     SurfaceParams.bWidth16Align    = false;
+    SurfaceParams.MemObjCtl = (pRenderHal->pOsInterface->pfnCachePolicyGetMemoryObject(
+        MOS_MP_RESOURCE_USAGE_DEFAULT,
+        pRenderHal->pOsInterface->pfnGetGmmClientContext(pRenderHal->pOsInterface))).DwordValue;
 
     VPHAL_RENDER_CHK_STATUS(VpHal_CommonSetSurfaceForHwAccess(
         pRenderHal,
@@ -2824,6 +2831,9 @@ MOS_STATUS VPHAL_VEBOX_STATE_G12_BASE::SetupSurfaceStatesForDenoise()
     SurfaceParams.bWidthInDword_UV = true;
     SurfaceParams.Boundary         = RENDERHAL_SS_BOUNDARY_ORIGINAL;
     SurfaceParams.bWidth16Align    = false;
+    SurfaceParams.MemObjCtl = (pRenderHal->pOsInterface->pfnCachePolicyGetMemoryObject(
+        MOS_MP_RESOURCE_USAGE_DEFAULT,
+        pRenderHal->pOsInterface->pfnGetGmmClientContext(pRenderHal->pOsInterface))).DwordValue;
 
     VPHAL_RENDER_CHK_STATUS(VpHal_CommonSetSurfaceForHwAccess(
         pRenderHal,

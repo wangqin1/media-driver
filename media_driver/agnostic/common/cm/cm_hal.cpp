@@ -11378,7 +11378,7 @@ MOS_STATUS HalCm_SetupBufferSurfaceStateWithBTIndex(
     uint32_t                           btIndex,
     bool                               pixelPitch)
 {
-    PRENDERHAL_INTERFACE            renderHal = state->renderHal;
+    PRENDERHAL_INTERFACE            renderHal = state ? state->renderHal : nullptr;
     MOS_STATUS                      eStatus;
     RENDERHAL_SURFACE               surface;
     RENDERHAL_SURFACE_STATE_PARAMS  surfaceParam;
@@ -11389,6 +11389,9 @@ MOS_STATUS HalCm_SetupBufferSurfaceStateWithBTIndex(
     UNUSED(pixelPitch);
 
     eStatus              = MOS_STATUS_UNKNOWN;
+
+    CM_CHK_NULL_RETURN_MOSERROR(state);
+    CM_CHK_NULL_RETURN_MOSERROR(renderHal);
 
     if (surfIndex == CM_NULL_SURFACE)
     {
@@ -11424,6 +11427,9 @@ MOS_STATUS HalCm_SetupBufferSurfaceStateWithBTIndex(
 
     // Set bRenderTarget by default
     surfaceParam.bRenderTarget = true;
+
+    //Cache configurations default
+    state->cmHalInterface->HwSetSurfaceMemoryObjectControl(memObjCtl, &surfaceParam);
 
     // Setup Buffer surface
     CM_CHK_MOSSTATUS_GOTOFINISH(renderHal->pfnSetupBufferSurfaceState(
