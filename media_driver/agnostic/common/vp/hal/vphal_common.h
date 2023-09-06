@@ -951,6 +951,7 @@ typedef struct _VPHAL_3DLUT_PARAMS
     uint32_t                   ChannelMapping;            // Channel Mapping for the 3DLUT input to 3DLUT output.
     uint16_t                   BitDepthPerChannel;        // Bit Depth Per Channel(4 channels for 3DLUT).
     uint16_t                   ByteCountPerEntry;         // Byte Count Per Entry including reserved bytes.
+    uint32_t                   LutMode;
 } VPHAL_3DLUT_PARAMS, * PVPHAL_3DLUT_PARAMS;
 
 //!

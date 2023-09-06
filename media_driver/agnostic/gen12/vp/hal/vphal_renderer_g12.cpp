@@ -151,5 +151,20 @@ MOS_STATUS VphalRendererG12::AllocateRenderComponents(
         return eStatus;
     }
 
+    if (MEDIA_IS_SKU(m_pSkuTable, FtrHDR))
+    {
+        pHdrState = MOS_New(VPHAL_HDR_STATE);
+        if (pHdrState)
+        {
+            MOS_ZeroMemory(pHdrState, sizeof(VPHAL_HDR_STATE));
+        }
+        else
+        {
+            eStatus = MOS_STATUS_NO_SPACE;
+            VPHAL_RENDER_ASSERTMESSAGE("Allocate HDR state Fail.");
+            return eStatus;
+        }
+    }
+
     return eStatus;
 }

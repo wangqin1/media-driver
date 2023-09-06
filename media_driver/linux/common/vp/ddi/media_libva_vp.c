@@ -2879,6 +2879,7 @@ DdiVp_SetProcFilter3DLutParams(
             DdiMedia_MediaSurfaceToMosResource(pMedia3DLutSurf, pOsResource);
             Mos_Solo_SetOsResource(pMedia3DLutSurf->pGmmResourceInfo, pOsResource);
         }
+        pSrc->p3DLutParams->LutMode = (uint32_t)p3DLutParamBuff->va_reserved[0];
     }
 
     return eStatus;

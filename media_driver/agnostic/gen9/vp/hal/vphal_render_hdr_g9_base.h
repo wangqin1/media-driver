@@ -221,6 +221,110 @@ typedef struct _MEDIA_WALKER_HDR_PREPROCESS_STATIC_DATA_G9
 }MEDIA_WALKER_HDR_PREPROCESS_STATIC_DATA_G9, *PMEDIA_WALKER_HDR_PREPROCESS_STATIC_DATA_G9;
 C_ASSERT(SIZE32(MEDIA_WALKER_HDR_PREPROCESS_STATIC_DATA_G9) == 25);
 
+// Static Data for HDR 3DLut kernel
+typedef struct _MEDIA_WALKER_HDR_3DLUT_STATIC_DATA_G9
+{
+    // DWORD 7 - GRF R2.7
+    union
+    {
+        struct
+        {
+            float xCoordinate;
+        };
+
+        float Value;
+    } DW0;
+
+    // DWORD 8 - GRF R2.8
+    union
+    {
+        struct
+        {
+            float yCoordinate;
+        };
+
+        float Value;
+    } DW1;
+
+    // DWORD 9 - GRF R2.9
+    union
+    {
+        struct
+        {
+            float srcChromaX;
+        };
+
+        float Value;
+    } DW2;
+
+    // DWORD 10 - GRF R2.10
+    union
+    {
+        struct
+        {
+            float srcChromaY;
+        };
+
+        float Value;
+    } DW3;
+
+    // DWORD 11 - GRF R2.11
+    union
+    {
+        struct
+        {
+            uint32_t dstInfo;
+        };
+
+        uint32_t Value;
+    } DW4;
+
+    // DWORD 12 - GRF R2.12
+    union
+    {
+        struct
+        {
+            uint32_t dstChromaSitingMode;
+        };
+
+        uint32_t Value;
+    } DW5;
+
+    // DWORD 13 - GRF R2.13
+    union
+    {
+        struct
+        {
+            uint32_t segSize;
+        };
+
+        uint32_t Value;
+    } DW6;
+
+    // DWORD 14 - GRF R2.14
+    union
+    {
+        struct
+        {
+            uint32_t byteCountPerChannel;
+        };
+
+        uint32_t Value;
+    } DW7;
+
+    // DWORD 15 - GRF R2.15
+    union
+    {
+        struct
+        {
+            uint32_t channelCount;
+        };
+
+        uint32_t Value;
+    } DW8;
+} MEDIA_WALKER_HDR_3DLUT_STATIC_DATA_G9, * PMEDIA_WALKER_HDR_3DLUT_STATIC_DATA_G9;
+C_ASSERT(SIZE32(MEDIA_WALKER_HDR_3DLUT_STATIC_DATA_G9) == 9);
+
 // Static Data for Gen9 HDR kernel
 typedef struct _MEDIA_WALKER_HDR_STATIC_DATA_G9
 {
@@ -1308,6 +1412,10 @@ MOS_STATUS VpHal_HdrPreprocessLoadStaticData_g9(
     PVPHAL_HDR_STATE            pHdrState,
     PVPHAL_HDR_RENDER_DATA      pRenderData,
     int32_t*                    piCurbeOffsetOut);
+
+MOS_STATUS VpHal_HdrExecute3DLUT_g9(
+    PVPHAL_HDR_STATE            pHdrState);
+
 #if __cplusplus
 }
 #endif // __cplusplus

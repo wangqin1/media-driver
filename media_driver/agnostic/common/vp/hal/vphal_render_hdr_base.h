@@ -36,6 +36,8 @@
 #include "vphal_render_renderstate.h"
 #include "vpkrnheader.h"
 
+#include "cmrt3dlut_umd.h"
+
 #if __cplusplus
 extern "C"
 {
@@ -219,6 +221,9 @@ typedef struct _VPHAL_HDR_STATE
     bool                            bFtrComputeWalker;
     bool                            bVeboxpreprocessed;                   //!< Marked as following VEBOX pre-render, with TCC/IEF preprocessed
     bool                            bNeed3DSampler;                       //!< indicate whether 3D should neede by force considering AVS removal etc.
+    Cmrt3DLutBase                  *m_cmKernel3DLUT;
+
+    CmEvent                        *m_cmEvent;
 
     MOS_STATUS(*pfnInitialize) (
         PVPHAL_HDR_STATE            pHdrState,
@@ -319,6 +324,11 @@ typedef struct _VPHAL_HDR_STATE
         PVPHAL_HDR_STATE            pHdrState,
         PVPHAL_HDR_RENDER_DATA      pRenderData,
         int32_t*                    piCurbeOffsetOut);
+
+    MOS_STATUS(*pfnExecute3DLUT) (
+        PVPHAL_HDR_STATE            pHdrState);
+
+//    int(*pfnRunULT) (PVPHAL_HDR_STATE            pHdrState);
 
 } VPHAL_HDR_STATE, *PVPHAL_HDR_STATE;
 

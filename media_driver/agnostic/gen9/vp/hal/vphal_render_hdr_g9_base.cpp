@@ -37,6 +37,8 @@
 #include "hal_oca_interface.h"
 #include "vphal_render_ief.h"
 
+#include "cmrt3dlut_defs.h"
+
 enum HDR_TMMODE {
     PREPROCESS_TM_S2H,
     PREPROCESS_TM_H2S,
@@ -1533,21 +1535,7 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
     uint32_t         i                      = 0;
     float            *pFloat                = nullptr;
     float            *pCoeff                = nullptr;
-    uint32_t         *pEOTFType             = nullptr;
-    float            *pEOTFCoeff            = nullptr;
-    float            *pPivotPoint           = nullptr;
-    uint32_t         *pTMType               = nullptr;
-    uint32_t         *pOETFNeqType          = nullptr;
-    uint32_t         *pCCMEnable            = nullptr;
-    float            *pPWLFStretch          = nullptr;
-    float            *pCoeffR               = nullptr;
-    float            *pCoeffG               = nullptr;
-    float            *pCoeffB               = nullptr;
-    uint16_t         *pSlopeIntercept       = nullptr;
     MOS_LOCK_PARAMS  LockFlags              = {};
-    float            PriorCscMatrix[12]     = {};
-    float            PostCscMatrix[12]      = {};
-    float            CcmMatrix[12]          = {};
     float            TempMatrix[12]         = {};
     PVPHAL_SURFACE   pSrc                   = nullptr;
 
@@ -1588,19 +1576,6 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
         TempMatrix[11]         = _c11;             \
     }
 
-    #define SET_EOTF_COEFF(_c1, _c2, _c3, _c4, _c5) \
-    { \
-        *pEOTFCoeff          = _c1;                 \
-        pEOTFCoeff += pCoeffSurface->dwPitch / sizeof(float); \
-        *pEOTFCoeff          = _c2;                 \
-        pEOTFCoeff += pCoeffSurface->dwPitch / sizeof(float); \
-        *pEOTFCoeff          = _c3;                 \
-        pEOTFCoeff += pCoeffSurface->dwPitch / sizeof(float); \
-        *pEOTFCoeff          = _c4;                 \
-        pEOTFCoeff += pCoeffSurface->dwPitch / sizeof(float); \
-        *pEOTFCoeff          = _c5;                 \
-    }
-
     #define WRITE_MATRIX(Matrix) \
     { \
         *pCoeff++          = Matrix[0];             \
@@ -1609,14 +1584,14 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
         *pCoeff++          = Matrix[3];             \
         *pCoeff++          = Matrix[4];             \
         *pCoeff++          = Matrix[5];             \
-         pCoeff+= pCoeffSurface->dwPitch / sizeof(float) - 6; \
+         pCoeff+= pCoeffSurface->dwPitch / (sizeof(float) * 4) - 6; \
         *pCoeff++          = Matrix[6];             \
         *pCoeff++          = Matrix[7];             \
         *pCoeff++          = Matrix[8];             \
         *pCoeff++          = Matrix[9];             \
         *pCoeff++          = Matrix[10];            \
         *pCoeff++          = Matrix[11];            \
-         pCoeff+= pCoeffSurface->dwPitch / sizeof(float)  - 6; \
+         pCoeff+= pCoeffSurface->dwPitch / (sizeof(float) * 4)  - 6; \
     }
 
     for (i = 0; i < VPHAL_MAX_HDR_INPUT_LAYER; i++, pFloat += VPHAL_HDR_COEF_LINES_PER_LAYER_BASIC_G9 * pCoeffSurface->dwPitch / (sizeof(float)))
@@ -1634,31 +1609,32 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
             pHdrState->Reporting.HDRMode = pHdrState->HdrMode[i];
         }
 
-        // EOTF/CCM/Tone Mapping/OETF require RGB input
         // So if prior CSC is needed, it will always be YUV to RGB conversion
         if (pHdrState->StageEnableFlags[i].PriorCSCEnable)
         {
-            if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT601)
+            if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT709)
             {
-                SET_MATRIX( 1.000000f,  0.000000f,  1.402000f,  0.000000f,
-                            1.000000f, -0.344136f, -0.714136f,  0.000000f,
-                            1.000000f,  1.772000f,  0.000000f,  0.000000f);
-
-                VpHal_HdrCalcYuvToRgbMatrix(CSpace_BT601, CSpace_sRGB, TempMatrix, PriorCscMatrix);
+                SET_MATRIX( 1.164384f,  0.000000f,  1.792741f, -0.972945f,
+                            1.164384f, -0.213249f, -0.532909f,  0.301483f,
+                            1.164384f,  2.112402f,  0.000000f, -1.133402f);
             }
-            else if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT709)
+            else if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT709_FULLRANGE)
             {
-                SET_MATRIX( 1.000000f,  0.000000f,  1.574800f,  0.000000f,
-                            1.000000f, -0.187324f, -0.468124f,  0.000000f,
-                            1.000000f,  1.855600f,  0.000000f,  0.000000f);
-                VpHal_HdrCalcYuvToRgbMatrix(CSpace_BT709, CSpace_sRGB, TempMatrix, PriorCscMatrix);
+                SET_MATRIX( 1.000000f,  0.000000f,  1.581000f, -0.793600f,
+                            1.000000f, -0.188062f, -0.469967f,  0.330305f,
+                            1.000000f,  1.862906f,  0.000000f, -0.935106f);
             }
             else if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT2020)
             {
-                SET_MATRIX( 1.000000f,  0.000000f,  1.474600f,  0.000000f,
-                            1.000000f, -0.164550f, -0.571350f,  0.000000f,
-                            1.000000f,  1.881400f,  0.000000f,  0.000000f);
-                VpHal_HdrCalcYuvToRgbMatrix(CSpace_BT2020, CSpace_sRGB, TempMatrix, PriorCscMatrix);
+                SET_MATRIX( 1.164384f,  0.000000f,  1.678674f, -0.915688f,
+                            1.164384f, -0.187326f, -0.650424f,  0.347458f,
+                            1.164384f,  2.141772f,  0.000000f, -1.148145f);
+            }
+            else if (pHdrState->PriorCSC[i] == VPHAL_HDR_CSC_YUV_TO_RGB_BT2020_FULLRANGE)
+            {
+                SET_MATRIX( 1.000000f, -0.000000f,  1.480406f, -0.743106f,
+                            1.000000f, -0.165201f, -0.573603f,  0.370850f,
+                            1.000000f,  1.888807f,  0.000000f, -0.948107f);
             }
             else
             {
@@ -1666,77 +1642,39 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
                 eStatus = MOS_STATUS_INVALID_PARAMETER;
                 goto finish;
             }
-            LimitFP32ArrayPrecisionToF3_9(PriorCscMatrix, ARRAY_SIZE(PriorCscMatrix));
-            WRITE_MATRIX(PriorCscMatrix);
+            WRITE_MATRIX(TempMatrix);
         }
         else
         {
             pCoeff += pCoeffSurface->dwPitch / sizeof(float) * 2;
         }
 
-        if (pHdrState->StageEnableFlags[i].CCMEnable)
-        {
-            // BT709 to BT2020 CCM
-            if (pHdrState->CCM[i] == VPHAL_HDR_CCM_BT601_BT709_TO_BT2020_MATRIX)
-            {
-                SET_MATRIX(0.627404078626f, 0.329282097415f, 0.043313797587f, 0.000000f,
-                           0.069097233123f, 0.919541035593f, 0.011361189924f, 0.000000f,
-                           0.016391587664f, 0.088013255546f, 0.895595009604f, 0.000000f);
-            }
-            // BT2020 to BT709 CCM
-            else if (pHdrState->CCM[i] == VPHAL_HDR_CCM_BT2020_TO_BT601_BT709_MATRIX)
-            {
-                SET_MATRIX(1.660490254890140f, -0.587638564717282f, -0.072851975229213f, 0.000000f,
-                          -0.124550248621850f,  1.132898753013895f, -0.008347895599309f, 0.000000f,
-                          -0.018151059958635f, -0.100578696221493f,  1.118729865913540f, 0.000000f);
-            }
-            else
-            {
-                SET_MATRIX(1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f);
-            }
-
-            VpHal_HdrCalcCCMMatrix(TempMatrix, CcmMatrix);
-            LimitFP32ArrayPrecisionToF3_9(CcmMatrix, ARRAY_SIZE(CcmMatrix));
-            WRITE_MATRIX(CcmMatrix);
-        }
-        else
-        {
-            pCoeff += pCoeffSurface->dwPitch / sizeof(float) * 2;
-        }
-
-        // OETF will output RGB surface
         // So if post CSC is needed, it will always be RGB to YUV conversion
         if (pHdrState->StageEnableFlags[i].PostCSCEnable)
         {
-            if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT601)
+            if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT709)
             {
-                SET_MATRIX( -0.331264f, -0.168736f,  0.500000f,  0.000000f,
-                             0.587000f,  0.299000f,  0.114000f,  0.000000f,
-                            -0.418688f,  0.500000f, -0.081312f,  0.000000f);
-                VpHal_HdrCalcRgbToYuvMatrix(CSpace_sRGB, CSpace_BT601, TempMatrix, PostCscMatrix);
-            }
-            else if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT709)
-            {
-                SET_MATRIX( -0.385428f, -0.114572f,  0.500000f,  0.000000f,
-                             0.715200f,  0.212600f,  0.072200f,  0.000000f,
-                            -0.454153f,  0.500000f, -0.045847f,  0.000000f);
-                VpHal_HdrCalcRgbToYuvMatrix(CSpace_sRGB, CSpace_BT709, TempMatrix, PostCscMatrix);
+                SET_MATRIX( -0.398942f, -0.040274f,  0.439216f,  0.501961f,
+                             0.614231f,  0.062007f,  0.182586f,  0.062745f,
+                            -0.338572f,  0.439216f, -0.100644f,  0.501961f);
             }
             else if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT709_FULLRANGE)
             {
-                SET_MATRIX( -0.385428f, -0.114572f,  0.500000f,  0.000000f,
-                             0.715200f,  0.212600f,  0.072200f,  0.000000f,
-                            -0.454153f,  0.500000f, -0.045847f, 0.000000f);
-                VpHal_HdrCalcRgbToYuvMatrix(CSpace_sRGB, CSpace_BT709_FullRange, TempMatrix, PostCscMatrix);
+                SET_MATRIX( -0.452372f, -0.045667f,  0.498039f,  0.501961f,
+                             0.715200f,  0.072200f,  0.212600f,  0.000000f,
+                            -0.383916f,  0.498039f, -0.114123f,  0.501961f);
             }
             else if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT2020)
             {
-                SET_MATRIX( -0.360370f, -0.139630f,  0.500000f,  0.000000f,
-                             0.678000f,  0.262700f,  0.059300f,  0.000000f,
-                            -0.459786f,  0.500000f, -0.040214f,  0.000000f);
-                VpHal_HdrCalcRgbToYuvMatrix(CSpace_sRGB, CSpace_BT2020, TempMatrix, PostCscMatrix);
+                SET_MATRIX( -0.403890f, -0.035325f,  0.439216f, 0.501961f,
+                             0.582282f,  0.050928f,  0.225613f, 0.062745f,
+                            -0.316560f,  0.439216f, -0.122655f, 0.501961f);
+            }
+            else if (pHdrState->PostCSC[i] == VPHAL_HDR_CSC_RGB_TO_YUV_BT2020_FULLRANGE)
+            {
+                SET_MATRIX( -0.457983f, -0.040057f,  0.498039f, 0.501961f,
+                             0.678000f,  0.059300f,  0.262700f, 0.000000f,
+                            -0.358957f,  0.498039f, -0.139082f, 0.501961f);
             }
             else
             {
@@ -1744,241 +1682,7 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
                 eStatus = MOS_STATUS_INVALID_PARAMETER;
                 goto finish;
             }
-            LimitFP32ArrayPrecisionToF3_9(PostCscMatrix, ARRAY_SIZE(PostCscMatrix));
-            WRITE_MATRIX(PostCscMatrix);
-        }
-        else
-        {
-            pCoeff += pCoeffSurface->dwPitch / sizeof(float) * 2;
-        }
-
-        pEOTFType  = (uint32_t *)(pFloat + VPHAL_HDR_COEF_EOTF_OFFSET);
-        pEOTFCoeff = pFloat + pCoeffSurface->dwPitch / sizeof(float) + VPHAL_HDR_COEF_EOTF_OFFSET;
-
-        if (pHdrState->StageEnableFlags[i].EOTFEnable)
-        {
-            if (pHdrState->EOTFGamma[i] == VPHAL_GAMMA_TRADITIONAL_GAMMA)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_EOTF_TRADITIONAL_GAMMA_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_EOTF_COEFF1_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_EOTF_COEFF2_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_EOTF_COEFF3_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_EOTF_COEFF4_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_EOTF_COEFF5_TRADITIONNAL_GAMMA_G9);
-            }
-            else if (pHdrState->EOTFGamma[i] == VPHAL_GAMMA_SMPTE_ST2084)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_SMPTE_ST2084_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_EOTF_COEFF1_SMPTE_ST2084_G9,
-                               VPHAL_HDR_EOTF_COEFF2_SMPTE_ST2084_G9,
-                               VPHAL_HDR_EOTF_COEFF3_SMPTE_ST2084_G9,
-                               VPHAL_HDR_EOTF_COEFF4_SMPTE_ST2084_G9,
-                               VPHAL_HDR_EOTF_COEFF5_SMPTE_ST2084_G9);
-            }
-            else if (pHdrState->EOTFGamma[i] == VPHAL_GAMMA_BT1886)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_EOTF_TRADITIONAL_GAMMA_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_EOTF_COEFF1_TRADITIONNAL_GAMMA_BT1886_G9,
-                               VPHAL_HDR_EOTF_COEFF2_TRADITIONNAL_GAMMA_BT1886_G9,
-                               VPHAL_HDR_EOTF_COEFF3_TRADITIONNAL_GAMMA_BT1886_G9,
-                               VPHAL_HDR_EOTF_COEFF4_TRADITIONNAL_GAMMA_BT1886_G9,
-                               VPHAL_HDR_EOTF_COEFF5_TRADITIONNAL_GAMMA_BT1886_G9);
-            }
-            else if (pHdrState->EOTFGamma[i] == VPHAL_GAMMA_SRGB)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_EOTF_TRADITIONAL_GAMMA_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_EOTF_COEFF1_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_EOTF_COEFF2_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_EOTF_COEFF3_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_EOTF_COEFF4_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_EOTF_COEFF5_TRADITIONNAL_GAMMA_SRGB_G9);
-            }
-            else
-            {
-                VPHAL_RENDER_ASSERTMESSAGE("Invalid EOTF setting for tone mapping");
-                eStatus = MOS_STATUS_INVALID_PARAMETER;
-                goto finish;
-            }
-        }
-
-        pEOTFType ++;
-        pEOTFCoeff = pFloat + pCoeffSurface->dwPitch / sizeof(float) + VPHAL_HDR_COEF_EOTF_OFFSET + 1;
-
-        if (pHdrState->StageEnableFlags[i].OETFEnable)
-        {
-            if (pHdrState->OETFGamma[i] == VPHAL_GAMMA_TRADITIONAL_GAMMA)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_EOTF_TRADITIONAL_GAMMA_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_OETF_COEFF1_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_OETF_COEFF2_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_OETF_COEFF3_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_OETF_COEFF4_TRADITIONNAL_GAMMA_G9,
-                               VPHAL_HDR_OETF_COEFF5_TRADITIONNAL_GAMMA_G9);
-            }
-            else if (pHdrState->OETFGamma[i] == VPHAL_GAMMA_SRGB)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_EOTF_TRADITIONAL_GAMMA_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_OETF_COEFF1_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_OETF_COEFF2_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_OETF_COEFF3_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_OETF_COEFF4_TRADITIONNAL_GAMMA_SRGB_G9,
-                               VPHAL_HDR_OETF_COEFF5_TRADITIONNAL_GAMMA_SRGB_G9);
-            }
-            else if (pHdrState->OETFGamma[i] == VPHAL_GAMMA_SMPTE_ST2084)
-            {
-                *pEOTFType = VPHAL_HDR_KERNEL_SMPTE_ST2084_G9;
-                SET_EOTF_COEFF(VPHAL_HDR_OETF_COEFF1_SMPTE_ST2084_G9,
-                               VPHAL_HDR_OETF_COEFF2_SMPTE_ST2084_G9,
-                               VPHAL_HDR_OETF_COEFF3_SMPTE_ST2084_G9,
-                               VPHAL_HDR_OETF_COEFF4_SMPTE_ST2084_G9,
-                               VPHAL_HDR_OETF_COEFF5_SMPTE_ST2084_G9);
-            }
-            else
-            {
-                VPHAL_RENDER_ASSERTMESSAGE("Invalid EOTF setting for tone mapping");
-                eStatus = MOS_STATUS_INVALID_PARAMETER;
-                goto finish;
-            }
-        }
-
-        // NOTE:
-        // Pitch is not equal to width usually. So please be careful when using pointer addition.
-        // Only do this when operands are in the same row.
-        pPivotPoint     = pFloat + pCoeffSurface->dwPitch / sizeof(float) * VPHAL_HDR_COEF_PIVOT_POINT_LINE_OFFSET;
-        pSlopeIntercept = (uint16_t *)(pFloat + pCoeffSurface->dwPitch / sizeof(float) * VPHAL_HDR_COEF_SLOPE_INTERCEPT_LINE_OFFSET);
-        pPWLFStretch    = pFloat + pCoeffSurface->dwPitch / sizeof(float) * VPHAL_HDR_COEF_PIVOT_POINT_LINE_OFFSET + 5;
-        pTMType         = (uint32_t *)(pPWLFStretch);
-        pCoeffR         = pPWLFStretch + 1;
-        pCoeffG         = pCoeffR + 1;
-        pCoeffB         = pFloat + pCoeffSurface->dwPitch / sizeof(float) * VPHAL_HDR_COEF_SLOPE_INTERCEPT_LINE_OFFSET + 6;
-        pOETFNeqType    = (uint32_t *)(pFloat + pCoeffSurface->dwPitch / sizeof(float) * VPHAL_HDR_COEF_SLOPE_INTERCEPT_LINE_OFFSET + 7);
-
-        if (pHdrState->HdrMode[i] == VPHAL_HDR_MODE_TONE_MAPPING)
-        {
-            *pTMType       = 1; // TMtype
-            *pOETFNeqType  = 0 | (10000 << 16); // OETFNEQ
-            *pCoeffR = 0.25f;
-            *pCoeffG = 0.625f;
-            *pCoeffB = 0.125f;
-        }
-        else if (pHdrState->HdrMode[i] == VPHAL_HDR_MODE_INVERSE_TONE_MAPPING)
-        {
-            *pPWLFStretch = 0.01f; // Stretch
-            *pOETFNeqType = 1 | ((uint32_t)100 << 16); // OETFNEQ
-            *pCoeffR = 0.0f;
-            *pCoeffG = 0.0f;
-            *pCoeffB = 0.0f;
-        }
-        else if (pHdrState->HdrMode[i] == VPHAL_HDR_MODE_H2H ||
-                 pHdrState->HdrMode[i] == VPHAL_HDR_MODE_H2H_AUTO_MODE)
-        {
-            PVPHAL_SURFACE  pTargetSurf  = (PVPHAL_SURFACE)pHdrState->pTargetSurf[0];
-
-            *pTMType      = 1; // TMtype
-            *pOETFNeqType = 2 | (((uint32_t)(pTargetSurf->pHDRParams->max_display_mastering_luminance)) << 16); // OETFNEQ
-            *pCoeffR = 0.25f;
-            *pCoeffG = 0.625f;
-            *pCoeffB = 0.125f;
-        }
-        else
-        {
-            *pPivotPoint   = 0.0f;
-            *pTMType       = 0; // TMtype
-            *pOETFNeqType  = 0; // OETFNEQ
-        }
-    }
-
-    // Skip the Dst CSC area
-    pFloat += 2 * pCoeffSurface->dwPitch / sizeof(float);
-
-    for (i = 0; i < VPHAL_MAX_HDR_INPUT_LAYER; i++, pFloat += VPHAL_HDR_COEF_LINES_PER_LAYER_EXT_G9 * pCoeffSurface->dwPitch / (sizeof(float)))
-    {
-        pCCMEnable = (uint32_t *)pFloat;
-        *(pCCMEnable + VPHAL_HDR_COEF_CCMEXT_OFFSET) = pHdrState->StageEnableFlags[i].CCMExt1Enable;
-        *(pCCMEnable + VPHAL_HDR_COEF_CLAMP_OFFSET ) = pHdrState->StageEnableFlags[i].GamutClamp1Enable;
-
-        pCCMEnable += pCoeffSurface->dwPitch / sizeof(float) * 2;
-        *(pCCMEnable + VPHAL_HDR_COEF_CCMEXT_OFFSET) = pHdrState->StageEnableFlags[i].CCMExt2Enable;
-        *(pCCMEnable + VPHAL_HDR_COEF_CLAMP_OFFSET ) = pHdrState->StageEnableFlags[i].GamutClamp2Enable;
-
-        if (pHdrState->pSrcSurf[i] == nullptr)
-        {
-            continue;
-        }
-
-        pCoeff = pFloat;
-        if (pHdrState->StageEnableFlags[i].CCMExt1Enable)
-        {
-            // BT709 to BT2020 CCM
-            if (pHdrState->CCMExt1[i] == VPHAL_HDR_CCM_BT601_BT709_TO_BT2020_MATRIX)
-            {
-                SET_MATRIX(0.627404078626f, 0.329282097415f, 0.043313797587f, 0.000000f,
-                           0.069097233123f, 0.919541035593f, 0.011361189924f, 0.000000f,
-                           0.016391587664f, 0.088013255546f, 0.895595009604f, 0.000000f);
-            }
-            // BT2020 to BT709 CCM
-            else if (pHdrState->CCMExt1[i] == VPHAL_HDR_CCM_BT2020_TO_BT601_BT709_MATRIX)
-            {
-                SET_MATRIX(1.660490254890140f, -0.587638564717282f, -0.072851975229213f, 0.000000f,
-                          -0.124550248621850f,  1.132898753013895f, -0.008347895599309f, 0.000000f,
-                          -0.018151059958635f, -0.100578696221493f,  1.118729865913540f, 0.000000f);
-            }
-            else if (pHdrState->CCMExt1[i] == VPHAL_HDR_CCM_BT2020_TO_MONITOR_MATRIX ||
-                     pHdrState->CCMExt1[i] == VPHAL_HDR_CCM_MONITOR_TO_BT2020_MATRIX ||
-                     pHdrState->CCMExt1[i] == VPHAL_HDR_CCM_MONITOR_TO_BT709_MATRIX)
-            {
-                PVPHAL_SURFACE  pTargetSurf = (PVPHAL_SURFACE)pHdrState->pTargetSurf[0];
-                VpHal_CalculateCCMWithMonitorGamut(pHdrState->CCMExt1[i], pTargetSurf->pHDRParams, TempMatrix);
-            }
-            else
-            {
-                SET_MATRIX(1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f);
-            }
-
-            VpHal_HdrCalcCCMMatrix(TempMatrix, CcmMatrix);
-            LimitFP32ArrayPrecisionToF3_9(CcmMatrix, ARRAY_SIZE(CcmMatrix));
-            WRITE_MATRIX(CcmMatrix);
-        }
-        else
-        {
-            pCoeff += pCoeffSurface->dwPitch / sizeof(float) * 2;
-        }
-
-        if (pHdrState->StageEnableFlags[i].CCMExt2Enable)
-        {
-            // BT709 to BT2020 CCM
-            if (pHdrState->CCMExt2[i] == VPHAL_HDR_CCM_BT601_BT709_TO_BT2020_MATRIX)
-            {
-                SET_MATRIX(0.627404078626f, 0.329282097415f, 0.043313797587f, 0.000000f,
-                           0.069097233123f, 0.919541035593f, 0.011361189924f, 0.000000f,
-                           0.016391587664f, 0.088013255546f, 0.895595009604f, 0.000000f);
-            }
-            // BT2020 to BT709 CCM
-            else if (pHdrState->CCMExt2[i] == VPHAL_HDR_CCM_BT2020_TO_BT601_BT709_MATRIX)
-            {
-                SET_MATRIX(1.660490254890140f, -0.587638564717282f, -0.072851975229213f, 0.000000f,
-                          -0.124550248621850f,  1.132898753013895f, -0.008347895599309f, 0.000000f,
-                          -0.018151059958635f, -0.100578696221493f,  1.118729865913540f, 0.000000f);
-            }
-            else if (pHdrState->CCMExt2[i] == VPHAL_HDR_CCM_BT2020_TO_MONITOR_MATRIX ||
-                     pHdrState->CCMExt2[i] == VPHAL_HDR_CCM_MONITOR_TO_BT2020_MATRIX ||
-                     pHdrState->CCMExt2[i] == VPHAL_HDR_CCM_MONITOR_TO_BT709_MATRIX)
-            {
-                PVPHAL_SURFACE  pTargetSurf = (PVPHAL_SURFACE)pHdrState->pTargetSurf[0];
-                VpHal_CalculateCCMWithMonitorGamut(pHdrState->CCMExt2[i], pTargetSurf->pHDRParams, TempMatrix);
-            }
-            else
-            {
-                SET_MATRIX(1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f);
-            }
-
-            VpHal_HdrCalcCCMMatrix(TempMatrix, CcmMatrix);
-            LimitFP32ArrayPrecisionToF3_9(CcmMatrix, ARRAY_SIZE(CcmMatrix));
-            WRITE_MATRIX(CcmMatrix);
+            WRITE_MATRIX(TempMatrix);
         }
         else
         {
@@ -1993,7 +1697,6 @@ MOS_STATUS VpHal_HdrInitCoeff_g9 (
     eStatus = MOS_STATUS_SUCCESS;
 
     #undef SET_MATRIX
-    #undef SET_EOTF_COEFF
     #undef WRITE_MATRIX
 
 finish:
@@ -2040,11 +1743,11 @@ MOS_STATUS VpHal_HdrAllocateResources_g9(
         pOsInterface,
         &pHdrState->CoeffSurface,
         "CoeffSurface",
-        Format_A8R8G8B8,
-        MOS_GFXRES_2D,
+        Format_Buffer,
+        MOS_GFXRES_BUFFER,
         MOS_TILE_LINEAR,
-        dwWidth,
-        dwHeight,
+        4 * 8 * sizeof(float),
+        1,
         false,
         MOS_MMC_DISABLED,
         &bAllocated));
@@ -2118,6 +1821,21 @@ MOS_STATUS VpHal_HdrFreeResources_g9(
 
     pOsInterface->pfnFreeResource(pOsInterface,
             &(pHdrState->CoeffSurface.OsResource));
+
+    if (pHdrState->pInput3DLUT)
+    {
+	free(pHdrState->pInput3DLUT);
+    }
+
+    if (pHdrState->m_cmKernel3DLUT)
+    {
+        pHdrState->m_cmKernel3DLUT->DestroySurfResources();
+        pHdrState->m_cmKernel3DLUT->DestroyKernelResources();
+        pHdrState->m_cmKernel3DLUT->DestroyProgramResources();
+        pHdrState->m_cmKernel3DLUT->Destroy();
+        delete(pHdrState->m_cmKernel3DLUT);
+    }
+
 finish:
     return eStatus;
 }
@@ -3235,6 +2953,8 @@ MOS_STATUS VpHal_HdrInitInterface_g9(
     pHdrState->pfnSetupPreSurfaceStates = VpHal_HdrSetupPreProcessSurfaceStates_g9;
     pHdrState->pfnLoadPreStaticData     = VpHal_HdrPreprocessLoadStaticData_g9;
 
+    pHdrState->pfnExecute3DLUT          = VpHal_HdrExecute3DLUT_g9;
+
     eStatus = MOS_STATUS_SUCCESS;
 
 finish:
@@ -3599,6 +3319,167 @@ MOS_STATUS VpHal_HdrPreprocessLoadStaticData_g9(
         goto finish;
     }
     pRenderData->iCurbeOffset = *piCurbeOffsetOut;
+
+finish:
+    return eStatus;
+}
+
+MOS_STATUS VpHal_HdrConvertLUT_g9(PVPHAL_HDR_STATE pHdrState, uint16_t* buffer, int segmentSize)
+{
+    MOS_STATUS eStatus = MOS_STATUS_UNKNOWN;
+
+    PMOS_INTERFACE pOsInterface = nullptr;
+
+    uint32_t LutSizeAlign = (segmentSize == 65) ? 128 : 64;
+
+    uint32_t i = 0, j = 0, k = 0;
+
+    uint16_t* pData = nullptr;
+
+    VPHAL_RENDER_CHK_NULL(pHdrState);
+    VPHAL_RENDER_CHK_NULL(buffer);
+
+    pOsInterface    = pHdrState->pOsInterface;
+
+    MOS_LOCK_PARAMS lockFlags;
+    MOS_ZeroMemory(&lockFlags, sizeof(MOS_LOCK_PARAMS));
+    lockFlags.WriteOnly = true;
+
+    pData = (uint16_t*)pOsInterface->pfnLockResource(
+        pOsInterface,
+        &(pHdrState->pSrcSurf[0]->p3DLutParams->pExt3DLutSurface->OsResource),
+        &lockFlags);
+
+    VPHAL_RENDER_CHK_NULL(pData);
+
+    for (int i = 0; i < segmentSize; ++i)
+    {
+        for (int j = 0; j < segmentSize; ++j)
+        {
+            for (int k = 0; k < segmentSize; ++k)
+            {
+                buffer[(i * segmentSize + j) * segmentSize * 4 + 4 * k] = pData[(i * segmentSize + j) * LutSizeAlign * 4 + 4 * k];
+                buffer[(i * segmentSize + j) * segmentSize * 4 + 4 * k + 1] = pData[(i * segmentSize + j) * LutSizeAlign * 4 + 4 * k + 1];
+                buffer[(i * segmentSize + j) * segmentSize * 4 + 4 * k + 2] = pData[(i * segmentSize + j) * LutSizeAlign * 4 + 4 * k + 2];
+                buffer[(i * segmentSize + j) * segmentSize * 4 + 4 * k + 3] = pData[(i * segmentSize + j) * LutSizeAlign * 4 + 4 * k + 3];
+
+            }
+        }
+    }
+
+    pOsInterface->pfnUnlockResource(
+            pOsInterface,
+            &(pHdrState->pSrcSurf[0]->p3DLutParams->pExt3DLutSurface->OsResource));
+
+finish:
+    return eStatus;
+}
+
+MOS_STATUS VpHal_HdrExecute3DLUT_g9(
+    PVPHAL_HDR_STATE           pHdrState)
+{
+
+    PVPHAL_SURFACE                  pSource                     = nullptr;
+    PVPHAL_SURFACE                  pTarget                     = nullptr;
+    MOS_STATUS                      eStatus                     = MOS_STATUS_SUCCESS;
+    PVPHAL_SURFACE                  pSurfaceTemp                = nullptr;
+    uint8_t                        *pTable                      = nullptr;
+
+    uint32_t                        segTableSize                = 65;
+    uint32_t                        ChromaSiting                = 0;
+    float                           x_coordinate                = 1.0f;
+    float                           y_coordinate                = 1.0f;
+
+    float                           src_chroma_sitting_x        = 0.0f;
+    float                           src_chroma_sitting_y        = 0.0f;
+
+    float                           constants_0                 = 0.5f;
+
+    MEDIA_WALKER_HDR_3DLUT_STATIC_DATA_G9 cmd, *lutStatic = &cmd;
+
+    VPHAL_RENDER_CHK_NULL(pHdrState);
+
+    LUTKernelSurfaceParams lutParams;
+    MOS_ZeroMemory(&lutParams, sizeof(lutParams));
+
+    pSource = pHdrState->pSrcSurf[0];
+    pTarget = pHdrState->pTargetSurf[0];
+    pSurfaceTemp = &pHdrState->CoeffSurface;
+
+    if (!Mos_ResourceIsNull(&pSource->OsResource))
+    {
+        lutParams.m_cmSurfIn = &pSource->OsResource;
+    }
+
+    if (!Mos_ResourceIsNull(&pTarget->OsResource))
+    {
+        lutParams.m_cmSurfOut = &pTarget->OsResource;
+    }
+
+    if (!Mos_ResourceIsNull(&pSurfaceTemp->OsResource))
+    {
+        lutParams.m_cmSurfCoeff = &pSurfaceTemp->OsResource;
+    }
+
+    if (pHdrState->m_cmKernel3DLUT == nullptr)
+    {
+        pHdrState->m_cmKernel3DLUT = new Cmrt3DLutUmd();
+        pHdrState->m_cmKernel3DLUT->Init((void *)pHdrState->pOsInterface->pOsContext);
+
+        size_t tableSize= segTableSize * segTableSize * segTableSize * 4 * sizeof(uint16_t);
+        pHdrState->pInput3DLUT = (uint8_t *)malloc(tableSize);
+        VpHal_HdrConvertLUT_g9(pHdrState, (uint16_t *)pHdrState->pInput3DLUT, 65);
+        lutParams.m_cmInputLUTData = pHdrState->pInput3DLUT;
+        pHdrState->m_cmKernel3DLUT->AllocateSurfaces(&lutParams);
+    }
+    else
+    {
+        pHdrState->m_cmKernel3DLUT->UpdateSurfaces(&lutParams);
+    }
+
+    x_coordinate /= (float)pSource->dwWidth;
+    y_coordinate /= (float)pSource->dwHeight;
+
+    ChromaSiting = VpHal_HdrGetHdrChromaSiting_g9(pSource->ChromaSiting);
+    switch (ChromaSiting)
+    {
+        case VPHAL_HDR_CHROMA_SITTING_B_G9:
+            src_chroma_sitting_y -= y_coordinate * constants_0;
+            src_chroma_sitting_x += x_coordinate * constants_0;
+            break;
+        case VPHAL_HDR_CHROMA_SITTING_AC_G9:
+            src_chroma_sitting_y += y_coordinate * constants_0;
+            break;
+        case VPHAL_HDR_CHROMA_SITTING_BD_G9:
+            src_chroma_sitting_y -= y_coordinate * constants_0;
+            break;
+        case VPHAL_HDR_CHROMA_SITTING_AB_G9:
+            src_chroma_sitting_x += x_coordinate * constants_0;
+            break;
+        case VPHAL_HDR_CHROMA_SITTING_ABCD_G9:
+            break;
+        default:
+            src_chroma_sitting_y += y_coordinate * constants_0;
+            src_chroma_sitting_x += x_coordinate * constants_0;
+            break;
+    }
+
+    lutStatic->DW0.xCoordinate = x_coordinate;
+    lutStatic->DW1.yCoordinate = y_coordinate;
+    lutStatic->DW2.srcChromaX = src_chroma_sitting_x;
+    lutStatic->DW3.srcChromaY = src_chroma_sitting_y;
+
+    lutStatic->DW4.dstInfo = (pHdrState->pTargetSurf[0]->Format == Format_P010) ? 0 : (pHdrState->pTargetSurf[0]->Format == Format_NV12) ? 1 : 2;
+    lutStatic->DW5.dstChromaSitingMode = VpHal_HdrGetHdrChromaSiting_g9(pHdrState->pTargetSurf[0]->ChromaSiting);
+    lutStatic->DW6.segSize = 65;
+    lutStatic->DW7.byteCountPerChannel = 2;
+    lutStatic->DW8.channelCount = 4;
+
+    pHdrState->m_cmKernel3DLUT->SetupCurbe(lutStatic);
+
+    //No need to wait for task finished
+    pHdrState->m_cmEvent = nullptr;
+    pHdrState->m_cmKernel3DLUT->CreateAndDispatchKernel(pSource->dwWidth, pSource->dwHeight, pHdrState->m_cmEvent);
 
 finish:
     return eStatus;

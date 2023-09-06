@@ -840,6 +840,12 @@ MOS_STATUS VphalRenderer::RenderSingleStream(
             pRenderPassData->pPrimarySurface,
             true /*save*/);
 
+        if (pRenderPassData->bHdrNeeded && (pHdrState && !pHdrState->bBypassHdrKernelPath))
+        {
+            pRenderPassData->bCompNeeded = false;
+            goto finish;
+        }
+
         //-- DNDI/IECP-----------------------------------------------------
         VPHAL_RNDR_DUMP_SURF(
             this, pRenderPassData->uiSrcIndex, VPHAL_DBG_DUMP_TYPE_PRE_DNDI, pRenderPassData->pSrcSurface);
@@ -881,11 +887,6 @@ MOS_STATUS VphalRenderer::RenderSingleStream(
         if ((eStatus == MOS_STATUS_SUCCESS) && (pRenderPassData->bCompNeeded || pRenderPassData->bHdrNeeded))
         {
             pRenderParams->pSrc[pRenderPassData->uiSrcIndex] = pRenderPassData->pSrcSurface;
-        }
-
-        if (pRenderPassData->bHdrNeeded && (pHdrState && !pHdrState->bBypassHdrKernelPath))
-        {
-            pRenderPassData->bCompNeeded = false;
         }
     }
 
@@ -1492,6 +1493,7 @@ MOS_STATUS VphalRenderer::Initialize(
     // Initialize Hdr renderer
     if (MEDIA_IS_SKU(m_pSkuTable, FtrHDR) && pHdrState)
     {
+        VpHal_HdrInitInterface(pHdrState, m_pRenderHal);
         VPHAL_RENDER_CHK_STATUS(pHdrState->pfnInitialize(
             pHdrState,
             pSettings,
@@ -2194,7 +2196,8 @@ MOS_STATUS VphalRenderer::GetHdrPathNeededFlag(
     PVPHAL_SURFACE          pTargetSurface;
     bool                    bToneMapping;
     bool                    bBt2020Output;
-    bool                    bMultiLayerBt2020;
+    bool                    b3DLUT;
+    bool                    bRenderOutput;
 
     //--------------------------------------------
     VPHAL_RENDER_CHK_NULL(pRenderParams);
@@ -2208,7 +2211,8 @@ MOS_STATUS VphalRenderer::GetHdrPathNeededFlag(
     pTargetSurface              = nullptr;
     bToneMapping                = false;
     bBt2020Output               = false;
-    bMultiLayerBt2020           = false;
+    b3DLUT                      = false;
+    bRenderOutput               = false;
 
     // Loop through the sources
     for (uiIndex = 0;
@@ -2229,20 +2233,25 @@ MOS_STATUS VphalRenderer::GetHdrPathNeededFlag(
             bBt2020Output = true;
         }
 
-        if ((pSrcSurface->pHDRParams && (pSrcSurface->pHDRParams->EOTF != VPHAL_HDR_EOTF_TRADITIONAL_GAMMA_SDR)) ||
-            (pTargetSurface->pHDRParams && (pTargetSurface->pHDRParams->EOTF != VPHAL_HDR_EOTF_TRADITIONAL_GAMMA_SDR)))
+        if (IS_COLOR_SPACE_BT2020(pSrcSurface->ColorSpace) &&
+            !IS_COLOR_SPACE_BT2020(pRenderParams->pTarget[0]->ColorSpace))
         {
             bToneMapping = true;
         }
 
-        if (IS_COLOR_SPACE_BT2020(pSrcSurface->ColorSpace) && pRenderParams->uSrcCount > 1)
+        if ((pSrcSurface->p3DLutParams) && (!Mos_ResourceIsNull(&(pSrcSurface->p3DLutParams->pExt3DLutSurface->OsResource))))
         {
-            bMultiLayerBt2020 = true;
+            b3DLUT = true;
+        }
+
+        if ((pSrcSurface->p3DLutParams) && (pSrcSurface->p3DLutParams->LutMode == 2))
+        {
+            bRenderOutput = true;
         }
     }
 
-    pRenderPassData->bHdrNeeded = bBt2020Output || bToneMapping || bMultiLayerBt2020;
-
+    pRenderPassData->bHdrNeeded = (bBt2020Output || bToneMapping || b3DLUT) && bRenderOutput;
+#if 0
     // Error handling for illegal Hdr cases on unsupported m_Platform
     if ((pRenderPassData->bHdrNeeded) && (!MEDIA_IS_SKU(m_pSkuTable, FtrHDR)))
     {
@@ -2250,7 +2259,7 @@ MOS_STATUS VphalRenderer::GetHdrPathNeededFlag(
         VPHAL_RENDER_ASSERTMESSAGE("Illegal Hdr cases on unsupported m_Platform, turn off HDR.");
         pRenderPassData->bHdrNeeded = false;
     }
-
+#endif
     if (pRenderPassData->bHdrNeeded)
     {
         pRenderPassData->bCompNeeded = false;

@@ -25,10 +25,12 @@ media_include_subdirectory(cmfccmlpch)
 
 set(TMP_1_SOURCES_
     ${CMAKE_CURRENT_LIST_DIR}/igvpkrn_isa_g12_tgllp.c
+    ${CMAKE_CURRENT_LIST_DIR}/igvpkrn_lut_isa_g12_tgllp.c
 )
 
 set(TMP_1_HEADERS_
     ${CMAKE_CURRENT_LIST_DIR}/igvpkrn_isa_g12_tgllp.h
+    ${CMAKE_CURRENT_LIST_DIR}/igvpkrn_lut_isa_g12_tgllp.h
 )
 
 set(SOURCES_

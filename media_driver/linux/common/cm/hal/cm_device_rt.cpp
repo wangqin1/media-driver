@@ -191,6 +191,11 @@ int32_t CmDeviceRT::DestroyAuxDevice()
     {
         cmData->mosCtx.SkuTable.reset();
         cmData->mosCtx.WaTable.reset();
+        if (cmData->mosCtx.contextOffsetList.size())
+        {
+            cmData->mosCtx.contextOffsetList.clear();
+            cmData->mosCtx.contextOffsetList.shrink_to_fit();
+        }
         HalCm_Destroy(cmData->cmHalState);
         // Delete CM Data itself
         MOS_FreeMemory(cmData);

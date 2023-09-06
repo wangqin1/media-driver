@@ -346,13 +346,17 @@ MOS_STATUS VpHal_HdrUpdatePerLayerPipelineStates(
             {
                 CurrentPriorCSC = VPHAL_HDR_CSC_YUV_TO_RGB_BT709;
             }
+            else if (pSrc->ColorSpace == CSpace_BT709_FullRange)
+            {
+                CurrentPriorCSC = VPHAL_HDR_CSC_YUV_TO_RGB_BT709_FULLRANGE;
+            }
             else if (pSrc->ColorSpace == CSpace_BT2020)
             {
                 CurrentPriorCSC = VPHAL_HDR_CSC_YUV_TO_RGB_BT2020;
             }
             else if (pSrc->ColorSpace == CSpace_BT2020_FullRange)
             {
-                CurrentPriorCSC = VPHAL_HDR_CSC_YUV_TO_RGB_BT2020;
+                CurrentPriorCSC = VPHAL_HDR_CSC_YUV_TO_RGB_BT2020_FULLRANGE;
             }
             else
             {
@@ -424,15 +428,17 @@ MOS_STATUS VpHal_HdrUpdatePerLayerPipelineStates(
             {
                 CurrentPostCSC = VPHAL_HDR_CSC_RGB_TO_YUV_BT709;
             }
-            else if (pHdrState->bVeboxpreprocessed && pTarget->ColorSpace == CSpace_BT709_FullRange)
+            else if (pTarget->ColorSpace == CSpace_BT709_FullRange)
             {
-                // CSC for target BT709_FULLRANGE is only exposed to Vebox Preprocessed HDR cases.
                 CurrentPostCSC = VPHAL_HDR_CSC_RGB_TO_YUV_BT709_FULLRANGE;
             }
-            else if (pTarget->ColorSpace == CSpace_BT2020 ||
-                     pTarget->ColorSpace == CSpace_BT2020_FullRange)
+            else if (pTarget->ColorSpace == CSpace_BT2020)
             {
                 CurrentPostCSC = VPHAL_HDR_CSC_RGB_TO_YUV_BT2020;
+            }
+            else if (pTarget->ColorSpace == CSpace_BT2020_FullRange)
+            {
+                CurrentPostCSC = VPHAL_HDR_CSC_RGB_TO_YUV_BT2020_FULLRANGE;
             }
             else
             {
@@ -1094,73 +1100,12 @@ MOS_STATUS VpHal_HdrRender(
     pHdrState->pColorFillParams = pRenderParams->pColorFillParams;
     // Allocate resources needed by Hdr
     VPHAL_RENDER_CHK_STATUS(pHdrState->pfnAllocateResources(pHdrState));
-    VPHAL_RENDER_CHK_STATUS(VpHal_HdrPreprocess(pHdrState, pRenderParams));    
 
-    for (i = 0; i < pHdrState->uiSplitFramePortions; i++)
-    {
-        // Reset states before rendering
-        // (clear allocations, get GSH allocation index + any additional housekeeping)
-        pOsInterface->pfnResetOsStates(pOsInterface);
-        VPHAL_RENDER_CHK_STATUS(pRenderHal->pfnReset(pRenderHal));
+    pOsInterface->pfnResetOsStates(pOsInterface);
+    VPHAL_RENDER_CHK_STATUS(pRenderHal->pfnReset(pRenderHal));
 
-        // Get the Kernel Parameter (Platform Specific)
-        VPHAL_RENDER_CHK_STATUS(pHdrState->pfnGetKernelParam(
-            HdrKernel,
-            &iKUID,
-            &iKDTIndex));
-
-        // Setup Hdr render data
-        VPHAL_RENDER_CHK_STATUS(VpHal_HdrSetupRenderData(
-            pHdrState,
-            &RenderData,
-            iKUID,
-            iKDTIndex));
-
-        // Set up HW States and Commands
-        VPHAL_RENDER_CHK_STATUS(VpHal_HdrSetupHwStates(pHdrState, &RenderData, iKDTIndex));
-
-        // Set Perf Tag
-        pOsInterface->pfnResetPerfBufferID(pOsInterface);
-        pOsInterface->pfnSetPerfTag(pOsInterface, RenderData.PerfTag);
-
-        if (pHdrState->bFtrComputeWalker)
-        {
-            // Setup Compute Walker
-            pWalkerParams = nullptr;
-            pComputeWalkerParams = &ComputeWalkerParams;
-
-            VPHAL_RENDER_CHK_STATUS(Vphal_HdrSetupComputeWalker(
-                pHdrState,
-                &RenderData,
-                &ComputeWalkerParams));
-        }
-        else
-        {
-            // Setup Media Walker Object
-            VpHal_HdrSetupWalkerObject(
-                pHdrState,
-                &RenderData,
-                &WalkerParams,
-                iKDTIndex,
-                i);
-        }
-
-        bLastSummit = (i == (pHdrState->uiSplitFramePortions - 1) ? true : false);
-        // Submit all media states to HW
-        VPHAL_RENDER_CHK_STATUS(VpHal_RndrSubmitCommands(
-            pRenderHal,
-            nullptr,
-            pHdrState->bNullHwRenderHdr,
-            pWalkerParams,
-            pComputeWalkerParams,
-            &pHdrState->StatusTableUpdateParams,
-            (VpKernelID)kernelHdrMandatory,
-            0,
-            nullptr,
-            bLastSummit));
-    }
-
-    eStatus = MOS_STATUS_SUCCESS;
+    VPHAL_RENDER_CHK_STATUS(pHdrState->pfnExecute3DLUT(pHdrState));
+    VpHal_RndrUpdateStatusTableAfterSubmit(pOsInterface, &pHdrState->StatusTableUpdateParams, pOsInterface->CurrentGpuContextOrdinal, eStatus);
 
 finish:
     VPHAL_RENDER_EXITMESSAGE("eStatus %d", eStatus);
