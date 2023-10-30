@@ -397,8 +397,9 @@ MOS_STATUS VphalRendererG12Tgllp::RenderScaling(
                      (Platform.usDeviceID == 0x4907)           ||
                      (Platform.usDeviceID == 0x4908))          &&
                      (pSource->p3DLutParams != nullptr)        &&
-                     (pSource->p3DLutParams->LutMode != 2)     &&
-                     (fScaleX < 1.0f && fScaleY < 1.0f);
+                     (((pSource->p3DLutParams->LutMode == 2)   &&
+                     (fScaleX != 1.0f && fScaleY != 1.0f))     ||
+                     (fScaleX < 1.0f && fScaleY < 1.0f));
 
     // If no need to scaling firstly, fall back to the typical video processing path.
     if (!bScalingFirst)

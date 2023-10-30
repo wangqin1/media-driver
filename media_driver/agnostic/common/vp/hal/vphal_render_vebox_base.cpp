@@ -4311,6 +4311,11 @@ MOS_STATUS VpHal_RndrRenderVebox(
 
     pRenderPassData->bCompNeeded  = true;
 
+    if (pInSurface->p3DLutParams && (pInSurface->p3DLutParams->LutMode == 2))
+    {
+        goto finish;
+    }
+
     if (!pRenderState->GetRenderDisableFlag())
     {
         MOS_ZeroMemory(pOutSurface, sizeof(VPHAL_SURFACE));

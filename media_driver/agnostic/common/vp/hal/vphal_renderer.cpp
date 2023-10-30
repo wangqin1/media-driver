@@ -840,12 +840,6 @@ MOS_STATUS VphalRenderer::RenderSingleStream(
             pRenderPassData->pPrimarySurface,
             true /*save*/);
 
-        if (pRenderPassData->bHdrNeeded && (pHdrState && !pHdrState->bBypassHdrKernelPath))
-        {
-            pRenderPassData->bCompNeeded = false;
-            goto finish;
-        }
-
         //-- DNDI/IECP-----------------------------------------------------
         VPHAL_RNDR_DUMP_SURF(
             this, pRenderPassData->uiSrcIndex, VPHAL_DBG_DUMP_TYPE_PRE_DNDI, pRenderPassData->pSrcSurface);
@@ -883,8 +877,13 @@ MOS_STATUS VphalRenderer::RenderSingleStream(
         VPHAL_RNDR_DUMP_SURF(
             this, pRenderPassData->uiSrcIndex, VPHAL_DBG_DUMP_TYPE_POST_DNDI, pRenderPassData->pSrcSurface);
 
+        if (VpHal_RndrIsHdrPathNeeded(this, pRenderParams, pRenderPassData) && (pHdrState && !pHdrState->bBypassHdrKernelPath))
+        {
+            pRenderPassData->bCompNeeded = false;
+        }
+
         // We'll continue even if Advanced render fails
-        if ((eStatus == MOS_STATUS_SUCCESS) && (pRenderPassData->bCompNeeded || pRenderPassData->bHdrNeeded))
+        if ((eStatus == MOS_STATUS_SUCCESS) && pRenderPassData->bCompNeeded)
         {
             pRenderParams->pSrc[pRenderPassData->uiSrcIndex] = pRenderPassData->pSrcSurface;
         }

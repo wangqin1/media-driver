@@ -2366,7 +2366,7 @@ VPHAL_OUTPUT_PIPE_MODE VPHAL_VEBOX_STATE_G12_BASE::GetOutputPipe(
     }
 
     // Let Kernel to output P010 instead of VEBOX output
-    if (pSrcSurface->p3DLutParams &&
+    if (pSrcSurface->p3DLutParams && (pSrcSurface->p3DLutParams->LutMode != 2) &&
         (pTarget->Format == Format_P010 ||
          pTarget->Format == Format_P016))
     {
@@ -2950,7 +2950,7 @@ void VPHAL_VEBOX_STATE_G12_BASE::VeboxSetRenderingFlags(
         bToneMapping = true;
     }
     pRenderData->bHdr3DLut = bToneMapping;
-    pRenderData->bHdr3DLut |= (pSrc->p3DLutParams != nullptr);
+    pRenderData->bHdr3DLut |= (pSrc->p3DLutParams != nullptr) && (pSrc->p3DLutParams->LutMode != 2);
     VPHAL_RENDER_NORMALMESSAGE("Enable 3DLut for HDR ToneMapping %d or 3DLUT filter %d.", bToneMapping, (pSrc->p3DLutParams != nullptr));
 
     VPHAL_VEBOX_STATE::VeboxSetRenderingFlags(pSrc, pRenderTarget);
